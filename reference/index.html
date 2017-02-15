@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   
+    <link rel="shortcut icon" href="../img/favicon.ico">
+
+    <title>Reference - Java VTL</title>
+
+    <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css">
+    <link href='//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../css/base.css" rel="stylesheet">
+    <link href="../css/cinder.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/highlight.css">
+
+
+    <link href="https://unpkg.com/codemirror@5.23.0/lib/codemirror.css" rel="stylesheet">
+
+
+    <link href="../css/railroad-diagrams.css" rel="stylesheet">
+
+
+    <link href="../css/railroad-vtl.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+    <script>
+    WebFont.load({
+        google: {
+            families: ['Open Sans', 'PT Sans']
+        }
+    });
+    </script>
+
+    
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Java VTL</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li class="active">
+                        <a href="./">Reference</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../playground/">Playground</a>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                    <li >
+                        <a rel="next" href="..">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../playground/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="first-level active"><a href="#vtl-reference">VTL Reference</a></li>
+        
+            <li class="second-level"><a href="#lexical-structure">Lexical structure</a></li>
+            
+                <li class="third-level"><a href="#identifier">Identifier</a></li>
+            
+                <li class="third-level"><a href="#comments">Comments</a></li>
+            
+                <li class="third-level"><a href="#white-space">White space</a></li>
+            
+                <li class="third-level"><a href="#literals">Literals</a></li>
+            
+        
+            <li class="second-level"><a href="#data-types">Data types</a></li>
+            
+                <li class="third-level"><a href="#any">any</a></li>
+            
+                <li class="third-level"><a href="#scalars">Scalars</a></li>
+            
+                <li class="third-level"><a href="#collections">Collections</a></li>
+            
+                <li class="third-level"><a href="#datasets">Datasets</a></li>
+            
+                <li class="third-level"><a href="#record">Record</a></li>
+            
+                <li class="third-level"><a href="#product">Product</a></li>
+            
+                <li class="third-level"><a href="#function">Function</a></li>
+            
+                <li class="third-level"><a href="#_1">()</a></li>
+            
+        
+            <li class="second-level"><a href="#join-expressions">Join expressions</a></li>
+            
+                <li class="third-level"><a href="#fold-clause">Fold clause</a></li>
+            
+        
+    
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="vtl-reference">VTL Reference</h1>
+<h2 id="lexical-structure">Lexical structure</h2>
+<h3 id="identifier">Identifier</h3>
+<h3 id="comments">Comments</h3>
+<h3 id="white-space">White space</h3>
+<h3 id="literals">Literals</h3>
+<p>Numbers, String, Dates, Periods etc.</p>
+<h2 id="data-types">Data types</h2>
+<h3 id="any">any</h3>
+<h3 id="scalars">Scalars</h3>
+<h4 id="scalar">scalar</h4>
+<h4 id="integers">integers</h4>
+<p>integer
+integer [a:]
+integer [:b]
+integer [a:b]
+integer {x1, ..., xn}</p>
+<h4 id="float">float</h4>
+<h4 id="null">null</h4>
+<h4 id="number">number</h4>
+<h4 id="boolean">boolean</h4>
+<h4 id="date">date</h4>
+<h4 id="strings">strings</h4>
+<p>string [a]
+string [a:b]
+string {s1, ..., sn}</p>
+<h3 id="collections">Collections</h3>
+<h4 id="list">list</h4>
+<h4 id="set">set</h4>
+<h4 id="collection">collection</h4>
+<h3 id="datasets">Datasets</h3>
+<h3 id="record">Record</h3>
+<h3 id="product">Product</h3>
+<h3 id="function">Function</h3>
+<h3 id="_1">()</h3>
+<h2 id="join-expressions">Join expressions</h2>
+<h3 id="fold-clause">Fold clause</h3>
+<p>Fold transposes a single data point of the input Dataset into several
+data points. It adds Identifier dim and measure msr to the resulting
+Dataset, inserts into the resulting Dataset a data point for each value
+A in the element list and assigns to the inserted data point dim = A and
+msr = value of measure A in the input Dataset.</p>
+<p>When measure A is null then fold does not create a data point for that
+measure. Note that in general unfolding and folding are not exactly
+symmetric operations, i.e. in some cases the fold operation applied to
+the unfolded Dataset does not recreate exactly the original Dataset
+(before unfolding).</p>
+<div id="foldClause">
+</div>
+
+<p><vtl></p>
+<p></vtl>
+<div class="vtl-example">
+    <div class="vtl-data">
+        Some data
+    </div>
+    <div class="vtl-code">
+        <div class="vtl-toolbar">
+            <div class="btn-group btn-group-xs" role="group" aria-label="...">
+                <button type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span> expand
+                </button>
+                <button type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> edit
+                </button>
+                <button type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-play" aria-hidden="true"></span> run
+                </button>
+            </div>
+        </div>
+        <textarea id="codemirror">
+ds1 := get("ds1")
+ds3 := [ds1] {
+    fold ds1.value1, value2, 'value3' to type, value
+}
+        </textarea>
+    </div>
+</div></p>
+<table>
+<thead>
+<tr>
+<th align="left">Identifier</th>
+<th align="left">Measure</th>
+<th align="left">Attribute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Value</td>
+<td align="left">Value</td>
+<td align="left">Value</td>
+</tr>
+<tr>
+<td align="left">Value</td>
+<td align="left">value</td>
+<td align="left">Value</td>
+</tr>
+</tbody>
+</table></div>
+        
+    </div>
+
+    <footer class="col-md-12 text-center">
+        <hr>
+        <p>
+        <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p></small>
+    </footer>
+
+    <script src="../js/jquery-1.10.2.min.js"></script>
+    <script src="../js/bootstrap-3.0.3.min.js"></script>
+    <script src="../js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+    var base_url = '..';
+    </script>
+    <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+    <script src="../js/base.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/vtl-mode.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        From here you can search these documents. Enter your search terms below.
+                    </p>
+                    <form role="form">
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        </div>
+                    </form>
+                    <div id="mkdocs-search-results"></div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </body>
+
+</html>

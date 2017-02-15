@@ -1,0 +1,49 @@
+svg.railroad-diagram g.terminal rect {
+    fill: #9ca0ff;
+}
+
+svg.railroad-diagram {
+    background: none;
+}
+
+.identifier {
+    color: #0263bb;
+}
+.measure {
+    color: #bb3721;
+}
+
+.attribute {
+    color: #54883b;
+}
+
+.vtl-data {
+    border-bottom: 0px;
+    margin-bottom: -1px;
+    padding: 10px;
+}
+
+.vtl-code, .vtl-data {
+    border: solid 1px #ddd;
+    border-radius: 4px 4px 0 0;
+}
+
+.vtl-code, .CodeMirror {
+    border-radius: 0 0 4px 4px;
+}
+
+
+.vtl-code .vtl-toolbar {
+    position: relative;
+}
+
+.vtl-code .vtl-toolbar .btn-group {
+    position: absolute;
+    top: -1px;
+    right: 15px;
+    z-index: 10;
+}
+
+.vtl-code .vtl-toolbar .btn-group .btn {
+    border-radius: 0 0 3px 3px;
+}

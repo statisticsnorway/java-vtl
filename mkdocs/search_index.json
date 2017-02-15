@@ -1,0 +1,174 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Welcome to MkDocs\n\n\nFor full documentation visit \nmkdocs.org\n.\n\n\nCommands\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#welcome-to-mkdocs", 
+            "text": "For full documentation visit  mkdocs.org .", 
+            "title": "Welcome to MkDocs"
+        }, 
+        {
+            "location": "/#commands", 
+            "text": "mkdocs new [dir-name]  - Create a new project.  mkdocs serve  - Start the live-reloading docs server.  mkdocs build  - Build the documentation site.  mkdocs help  - Print this help message.", 
+            "title": "Commands"
+        }, 
+        {
+            "location": "/#project-layout", 
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Project layout"
+        }, 
+        {
+            "location": "/reference/", 
+            "text": "VTL Reference\n\n\nLexical structure\n\n\nIdentifier\n\n\nComments\n\n\nWhite space\n\n\nLiterals\n\n\nNumbers, String, Dates, Periods etc.\n\n\nData types\n\n\nany\n\n\nScalars\n\n\nscalar\n\n\nintegers\n\n\ninteger\ninteger [a:]\ninteger [:b]\ninteger [a:b]\ninteger {x1, ..., xn}\n\n\nfloat\n\n\nnull\n\n\nnumber\n\n\nboolean\n\n\ndate\n\n\nstrings\n\n\nstring [a]\nstring [a:b]\nstring {s1, ..., sn}\n\n\nCollections\n\n\nlist\n\n\nset\n\n\ncollection\n\n\nDatasets\n\n\nRecord\n\n\nProduct\n\n\nFunction\n\n\n()\n\n\nJoin expressions\n\n\nFold clause\n\n\nFold transposes a single data point of the input Dataset into several\ndata points. It adds Identifier dim and measure msr to the resulting\nDataset, inserts into the resulting Dataset a data point for each value\nA in the element list and assigns to the inserted data point dim = A and\nmsr = value of measure A in the input Dataset.\n\n\nWhen measure A is null then fold does not create a data point for that\nmeasure. Note that in general unfolding and folding are not exactly\nsymmetric operations, i.e. in some cases the fold operation applied to\nthe unfolded Dataset does not recreate exactly the original Dataset\n(before unfolding).\n\n\n\n\n\n\n\n\n\n\n\n\n    \n\n        Some data\n    \n\n    \n\n        \n\n            \n\n                \n\n                    \n expand\n                \n\n                \n\n                    \n edit\n                \n\n                \n\n                    \n run\n                \n\n            \n\n        \n\n        \n\nds1 := get(\"ds1\")\nds3 := [ds1] {\n    fold ds1.value1, value2, 'value3' to type, value\n}\n        \n\n    \n\n\n\n\n\n\n\n\n\n\nIdentifier\n\n\nMeasure\n\n\nAttribute\n\n\n\n\n\n\n\n\n\n\nValue\n\n\nValue\n\n\nValue\n\n\n\n\n\n\nValue\n\n\nvalue\n\n\nValue", 
+            "title": "Reference"
+        }, 
+        {
+            "location": "/reference/#vtl-reference", 
+            "text": "", 
+            "title": "VTL Reference"
+        }, 
+        {
+            "location": "/reference/#lexical-structure", 
+            "text": "", 
+            "title": "Lexical structure"
+        }, 
+        {
+            "location": "/reference/#identifier", 
+            "text": "", 
+            "title": "Identifier"
+        }, 
+        {
+            "location": "/reference/#comments", 
+            "text": "", 
+            "title": "Comments"
+        }, 
+        {
+            "location": "/reference/#white-space", 
+            "text": "", 
+            "title": "White space"
+        }, 
+        {
+            "location": "/reference/#literals", 
+            "text": "Numbers, String, Dates, Periods etc.", 
+            "title": "Literals"
+        }, 
+        {
+            "location": "/reference/#data-types", 
+            "text": "", 
+            "title": "Data types"
+        }, 
+        {
+            "location": "/reference/#any", 
+            "text": "", 
+            "title": "any"
+        }, 
+        {
+            "location": "/reference/#scalars", 
+            "text": "", 
+            "title": "Scalars"
+        }, 
+        {
+            "location": "/reference/#scalar", 
+            "text": "", 
+            "title": "scalar"
+        }, 
+        {
+            "location": "/reference/#integers", 
+            "text": "integer\ninteger [a:]\ninteger [:b]\ninteger [a:b]\ninteger {x1, ..., xn}", 
+            "title": "integers"
+        }, 
+        {
+            "location": "/reference/#float", 
+            "text": "", 
+            "title": "float"
+        }, 
+        {
+            "location": "/reference/#null", 
+            "text": "", 
+            "title": "null"
+        }, 
+        {
+            "location": "/reference/#number", 
+            "text": "", 
+            "title": "number"
+        }, 
+        {
+            "location": "/reference/#boolean", 
+            "text": "", 
+            "title": "boolean"
+        }, 
+        {
+            "location": "/reference/#date", 
+            "text": "", 
+            "title": "date"
+        }, 
+        {
+            "location": "/reference/#strings", 
+            "text": "string [a]\nstring [a:b]\nstring {s1, ..., sn}", 
+            "title": "strings"
+        }, 
+        {
+            "location": "/reference/#collections", 
+            "text": "", 
+            "title": "Collections"
+        }, 
+        {
+            "location": "/reference/#list", 
+            "text": "", 
+            "title": "list"
+        }, 
+        {
+            "location": "/reference/#set", 
+            "text": "", 
+            "title": "set"
+        }, 
+        {
+            "location": "/reference/#collection", 
+            "text": "", 
+            "title": "collection"
+        }, 
+        {
+            "location": "/reference/#datasets", 
+            "text": "", 
+            "title": "Datasets"
+        }, 
+        {
+            "location": "/reference/#record", 
+            "text": "", 
+            "title": "Record"
+        }, 
+        {
+            "location": "/reference/#product", 
+            "text": "", 
+            "title": "Product"
+        }, 
+        {
+            "location": "/reference/#function", 
+            "text": "", 
+            "title": "Function"
+        }, 
+        {
+            "location": "/reference/#_1", 
+            "text": "", 
+            "title": "()"
+        }, 
+        {
+            "location": "/reference/#join-expressions", 
+            "text": "", 
+            "title": "Join expressions"
+        }, 
+        {
+            "location": "/reference/#fold-clause", 
+            "text": "Fold transposes a single data point of the input Dataset into several\ndata points. It adds Identifier dim and measure msr to the resulting\nDataset, inserts into the resulting Dataset a data point for each value\nA in the element list and assigns to the inserted data point dim = A and\nmsr = value of measure A in the input Dataset.  When measure A is null then fold does not create a data point for that\nmeasure. Note that in general unfolding and folding are not exactly\nsymmetric operations, i.e. in some cases the fold operation applied to\nthe unfolded Dataset does not recreate exactly the original Dataset\n(before unfolding).      \n     \n        Some data\n     \n     \n         \n             \n                 \n                      expand\n                 \n                 \n                      edit\n                 \n                 \n                      run\n                 \n             \n         \n         \nds1 := get(\"ds1\")\nds3 := [ds1] {\n    fold ds1.value1, value2, 'value3' to type, value\n}\n         \n          Identifier  Measure  Attribute      Value  Value  Value    Value  value  Value", 
+            "title": "Fold clause"
+        }, 
+        {
+            "location": "/playground/", 
+            "text": "", 
+            "title": "Playground"
+        }
+    ]
+}
