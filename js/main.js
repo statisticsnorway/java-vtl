@@ -5,32 +5,15 @@ require.config({
         //'react': 'https://unpkg.com/react@15/dist/react',
         //'react-dom': 'https://unpkg.com/react-dom@15/dist/react-dom',
         //'lodash.debounce': 'https://unpkg.com/lodash.debounce@4.0.8/index',
-        'codemirror': 'https://unpkg.com/codemirror@5.23.0/lib/codemirror',
-        'codemirror-simple': 'https://unpkg.com/codemirror@5.23.0/addon/mode/simple',
-        'rd': '/js/railroad-diagrams'
         //'classnames': 'https://unpkg.com/classnames@2.2.5/index',
         //'react-codemirror': 'https://unpkg.com/react-codemirror@0.3.0/dist/react-codemirror'
+        //vtl: base_url + '/../../js/'
+
+        'codemirror': '//unpkg.com/codemirror@5.23.0/lib/codemirror',
+        'codemirror-simple': '//unpkg.com/codemirror@5.23.0/addon/mode/simple',
+        'rd': base_url + '/../js/railroad-diagrams',
     },
-    shim: {
-        // 'lodash.debounce': {
-        //     deps: ['module'],
-        //     init: function () {
-        //         console.log("shim")
-        //     }
-        // },
-        // 'react-codemirror': {
-        //     deps: ['lodash.debounce', 'react-dom', 'react', 'codemirror']
-        // },
-        // 'react': {
-        //     init: function () {
-        //         console.log("shim")
-        //     },
-        //     exports: 'React'
-        // },
-        //'codemirror-simple': {
-        //    deps: ['codemirror']
-        //}
-    },
+    shim: {},
     map: {
         'codemirror-simple': {
             '../../lib/codemirror': 'codemirror'
