@@ -1,0 +1,11 @@
+<div class="vtl-block vtl-data">
+    <uib-tabset>
+        <uib-tab heading="{{ dataset.name }}" ng-repeat="dataset in datasets track by $index">
+            <vtl-table dataset="dataset"/>
+        </uib-tab>
+        <uib-tab ng-if="errors" heading="Error" class="pull-left">
+            <p>Error: {{ errors.message }}</p>
+            <pre class="pre-scrollable">{{ errors.stackTrace }}</pre>
+        </uib-tab>
+    </uib-tabset>
+</div>

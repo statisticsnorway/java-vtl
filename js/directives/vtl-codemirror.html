@@ -1,0 +1,23 @@
+<div class="vtl-block vtl-code">
+    <div ng-show="loading" class="loader">
+        <div>
+            <!-- <i class="fa fa-refresh fa-spin fa-2x fa-fw"></i> -->
+        </div>
+    </div>
+    <div class="vtl-toolbar">
+        <div class="btn-group btn-group-xs" aria-label="...">
+            <button type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span> expand
+            </button>
+            <button type="button" class="btn btn-default">
+                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> edit
+            </button>
+            <button ng-click="execute(expression)" type="button" class="btn btn-default">
+                <i ng-show="errors" class="fa fa-exclamation" aria-hidden="true"></i>
+                <i ng-show="loading" class="fa fa-refresh fa-spin fa-1x fa-fw"></i>
+                <span ng-hide="loading" class="glyphicon glyphicon-play" aria-hidden="true"></span> run
+            </button>
+        </div>
+    </div>
+    <ui-codemirror ng-model="expression" ui-codemirror-opts="options"></ui-codemirror>
+</div>

@@ -17,33 +17,110 @@ svg.railroad-diagram {
     color: #54883b;
 }
 
-.vtl-data {
-    border-bottom: 0px;
+/*
+  VTL example blocks
+*/
+.vtl-example {
+    margin-bottom: 15px;
+}
+.vtl-example .vtl-block {
+    border: solid 1px #ddd;
+    border-radius: 4px;
     margin-bottom: -1px;
     padding: 10px;
+    position: relative;
 }
 
-.vtl-code, .vtl-data {
-    border: solid 1px #ddd;
+/* radius only on top */
+.vtl-example .vtl-block:first-child:not(:last-child) {
     border-radius: 4px 4px 0 0;
+    border-bottom: 0px;
+}
+/* borders in between */
+.vtl-example .vtl-block:not(:first-child):not(:last-child) {
+    border-radius: 0;
 }
 
+/* radius only on top */
+.vtl-example .vtl-block:last-child:not(:first-child) {
+    border-radius: 0 0 4px 4px;
+}
+
+/*
+  Code mirror
+*/
 .vtl-code, .CodeMirror {
     border-radius: 0 0 4px 4px;
 }
 
+.vtl-block.vtl-code {
+    padding: 0;
+}
 
-.vtl-code .vtl-toolbar {
+/* Loader */
+.vtl-block .loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background-color: rgba(147, 153, 160, 0.12);
+    cursor: wait;
+}
+
+.vtl-block .loader div {
+    position: relative;
+    top: 50%;
+    left: 50%;
+}
+
+
+/*
+  VTL block toolbar
+*/
+
+.vtl-block .vtl-toolbar {
     position: relative;
 }
 
-.vtl-code .vtl-toolbar .btn-group {
+.vtl-block .vtl-toolbar .btn-group {
     position: absolute;
     top: -1px;
-    right: 15px;
+    right: 20px;
     z-index: 10;
 }
 
-.vtl-code .vtl-toolbar .btn-group .btn {
+.vtl-block .vtl-toolbar .btn-group .btn {
     border-radius: 0 0 3px 3px;
+}
+
+/* VTL data block */
+.vtl-block.vtl-data {
+    position: relative;
+    padding: 22px 0 0; /* account for the nav bars */
+}
+
+.vtl-data ul.nav.nav-tabs {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: #f7f7f7;
+    padding: 0 15px 0 30px ;
+}
+
+.vtl-data .nav>li {
+    float: right; /* we want tabs to be on the right side */
+}
+
+.vtl-data .nav>li>a {
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-top: 0;
+}
+
+.vtl-data .tab-content {
+    overflow: auto;
+    max-height: 300px;
 }

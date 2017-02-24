@@ -1,0 +1,16 @@
+<div>
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th ng-repeat="component in dataset.structure" ng-class="component.role | lowercase">{{ component.name }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in dataset.data | limitTo : 100">
+            <th>{{ $index }}</th>
+            <td ng-repeat="component in dataset.structure">{{ row[$index] == null ? '[NULL]' : row[$index] }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
