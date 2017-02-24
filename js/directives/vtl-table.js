@@ -1,7 +1,7 @@
 /*global define*/
 'use strict';
 
-define(['angular',], function (angular) {
+define(['angular','require'], function (angular, req) {
     var moduleName = 'vtl.table';
     angular.module(moduleName, [])
         .directive('vtlTable', function () {
@@ -11,7 +11,7 @@ define(['angular',], function (angular) {
                     dataset: '=',
                 },
                 replace: true,
-                templateUrl: '../../js/directives/vtl-table.html',
+                templateUrl: req.toUrl('./vtl-table.html'),
             };
         });
     return moduleName;

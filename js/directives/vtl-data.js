@@ -1,7 +1,7 @@
 /*global define*/
 'use strict';
 
-define(['angular',], function (angular) {
+define(['angular', 'require'], function (angular, req) {
     var moduleName = 'vtl.data';
     angular.module(moduleName, [])
         .directive('vtlData', function () {
@@ -11,7 +11,7 @@ define(['angular',], function (angular) {
                     datasets: '=',
                     errors: '='
                 },
-                templateUrl: '../../js/directives/vtl-data.html'
+                templateUrl: req.toUrl('./vtl-data.html')
             };
 
         });

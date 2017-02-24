@@ -1,7 +1,6 @@
 /*global define*/
 'use strict';
-
-define(['angular', 'ui.codemirror'], function (angular) {
+define(['angular', 'require', 'ui.codemirror'], function (angular, req) {
     var moduleName = 'vtl.code';
     angular.module(moduleName, ['ui.codemirror'])
         .directive('vtlCode', function () {
@@ -10,7 +9,7 @@ define(['angular', 'ui.codemirror'], function (angular) {
                 restrict: 'E',
                 transclude: true,
                 //replace: true,
-                templateUrl: '../../js/directives/vtl-codemirror.html',
+                templateUrl: req.toUrl('./vtl-codemirror.html'),
                 link: function preLink(scope, iElement, iAttrs, controller, transclude) {
                     var expression = transclude().text();
                     scope.expression = expression.replace(/^\s+|\s+$/g, '').trim();
