@@ -3,7 +3,7 @@
 
     
     <url>
-     <loc>/</loc>
+     <loc>https://statisticsnorway.github.io/java-vtl//</loc>
      <lastmod>2017-02-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -11,7 +11,7 @@
 
     
     <url>
-     <loc>/reference/</loc>
+     <loc>https://statisticsnorway.github.io/java-vtl//reference/</loc>
      <lastmod>2017-02-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
@@ -19,7 +19,7 @@
 
     
     <url>
-     <loc>/playground/</loc>
+     <loc>https://statisticsnorway.github.io/java-vtl//playground/</loc>
      <lastmod>2017-02-24</lastmod>
      <changefreq>daily</changefreq>
     </url>
