@@ -199,6 +199,16 @@
                 <li class="third-level"><a href="#check-with-single-rule">Check with single rule</a></li>
             
         
+            <li class="second-level"><a href="#conditional-operators">Conditional operators</a></li>
+            
+                <li class="third-level"><a href="#nvl">nvl</a></li>
+            
+        
+            <li class="second-level"><a href="#boolean-operators">Boolean operators</a></li>
+            
+                <li class="third-level"><a href="#null-operators">Null operators</a></li>
+            
+        
     
     </ul>
 </div></div>
@@ -358,7 +368,147 @@ Italy  , na
 Sweden , 9M
     </vtl-dataset>
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
-</div></p></div>
+</div></p>
+<h2 id="conditional-operators">Conditional operators</h2>
+<h3 id="nvl">nvl</h3>
+<p>The operator nvl replaces null values with a value given as a parameter.
+<div vtl-example>
+    <vtl-code>
+join := [left, left] {
+    b = nvl(population, 0)
+}
+    </vtl-code>
+    <vtl-dataset name="left">
+country[I,String],population[M,String]
+France , 64M
+Norway , 5M
+Italy  , null
+Sweden , 9M
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div></p>
+<h2 id="boolean-operators">Boolean operators</h2>
+<h3 id="null-operators">Null operators</h3>
+<p>VTL adopts 3VL (three-value logic); null is not considered a "value",
+ but rather a marker (or placeholder) indicating the absence of value.</p>
+<table>
+<thead>
+<tr>
+<th><em>p</em></th>
+<th><em>q</em></th>
+<th><em>p</em>  OR <em>q</em></th>
+<th><em>p</em>  AND <em>q</em></th>
+<th><em>p</em>  = <em>q</em></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+</tr>
+<tr>
+<td>True</td>
+<td>False</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>True</td>
+<td>Unknown</td>
+<td>True</td>
+<td>Unknown</td>
+<td>Unknown</td>
+</tr>
+<tr>
+<td>False</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>False</td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td>False</td>
+<td>Unknown</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>True</td>
+<td>True</td>
+<td>Unknown</td>
+<td>Unknown</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>False</td>
+<td>Unknown</td>
+<td>False</td>
+<td>Unknown</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td>Unknown</td>
+<td>Unknown</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th align="left"><em>p</em></th>
+<th align="left">NOT <em>p</em></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">True</td>
+<td align="left">False</td>
+</tr>
+<tr>
+<td align="left">False</td>
+<td align="left">True</td>
+</tr>
+<tr>
+<td align="left">Unknown</td>
+<td align="left">Unknown</td>
+</tr>
+</tbody>
+</table>
+<p>Null in boolean operators evaluates to false. In order to test whether
+ or not a value is null one can use the postfix operator <code>is null</code> or
+ <code>is not null</code> as well as the functional equivalents <code>isnull()</code> or
+ <code>not(isnull())</code>.</p>
+<div vtl-example>
+    <vtl-code>
+isnotnull := [data] {
+    filter value is not null
+}
+isnull := {
+    filter value is null
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+country[I,String],value[M,String]
+Null , null
+NotNull , value
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div></div>
         
     </div>
 
