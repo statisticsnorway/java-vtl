@@ -199,6 +199,7 @@ String|substring|![todo][todo]
 String|indexof|![todo][todo]
 String|date_from_string|![usable](http://progressed.io/bar/25)|Dataset as input not implemented. Only YYYY date format accepted.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e187c210f99b4c179550b9bcb1c92860)](https://www.codacy.com/app/hadrien-kohl/ssb-java-vtl?utm_source=github.com&utm_medium=referral&utm_content=statisticsnorway/java-vtl&utm_campaign=badger)
 [![Analytics](https://ga-beacon.appspot.com/UA-85245041-2/readme)](https://github.com/igrigorik/ga-beacon)
 
 
