@@ -8,6 +8,8 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
 import no.ssb.vtl.script.VTLScriptEngine;
+import no.ssb.vtl.script.error.SyntaxException;
+import no.ssb.vtl.script.error.TypeException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -36,13 +38,13 @@ public class DateFunctionVisitor extends VTLBaseVisitor<VTLExpression> {
         String dateFormatStripped = VisitorUtil.stripQuotes(dateFormat);
 
         if (!VTLDate.canParse(dateFormatStripped)) {
-            throw new ParseCancellationException(
-                    format("Date format %s unsupported", dateFormat));
+            throw new ParseCancellationException(new SyntaxException(
+                    format("Date format %s unsupported", dateFormat), "VTL-01xx"));
         }
 
         if (input.getType() != String.class) {
-            throw new ParseCancellationException(
-                    format("Input must be String type, was %s", input.getType()));
+            throw new ParseCancellationException(new TypeException(
+                    format("Input must be String type, was %s", input.getType()), "VTL-02xx"));
         }
 
         return new VTLExpression.Builder(Instant.class, dataPoint -> {
