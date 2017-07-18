@@ -44,7 +44,7 @@ define(['angular'], function (angular) {
                 if (cells.length < 1)
                     throw new Error("invalid header format");
 
-                var columnRegex = /([^,\[]+)\[(I|M|A),(String|Integer|Double|Long|Float)]?/;
+                var columnRegex = /([^,\[]+)\[(I|M|A),(String|Double|Long)]?/;
                 for (var len = cells.length, i = 0; i < len; ++i) {
                     cell = columnRegex.exec(cells[i].trim());
                     if (cell.length != 4)
