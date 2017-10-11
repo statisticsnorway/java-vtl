@@ -26,6 +26,7 @@ import no.ssb.vtl.model.VTLExpression;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.TypeException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.Map;
@@ -51,8 +52,8 @@ public class ConditionalExpressionVisitor extends VTLBaseVisitor<VTLExpression> 
 
         //TODO should work more with VTLObject. Now we mix own type with Java type.
         if (!input.getType().isAssignableFrom(repValue.getClass())) {
-            throw new ParseCancellationException("The value to replace null must be of type " + input.getType()
-            + ", but was: " + repValue.getClass() + ". Replacement value was: " + repValue);
+            throw new ParseCancellationException(new TypeException("The value to replace null must be of type " + input.getType()
+            + ", but was: " + repValue.getClass() + ". Replacement value was: " + repValue, "VTL-02xx"));
         }
 
         return new VTLExpression.Builder(input.getType(), dataPoint -> {

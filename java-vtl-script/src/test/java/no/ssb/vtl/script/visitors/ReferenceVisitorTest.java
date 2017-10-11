@@ -27,6 +27,7 @@ import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLLexer;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.SyntaxException;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -38,7 +39,7 @@ import org.junit.Test;
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
 
-import static no.ssb.vtl.model.Component.Role.IDENTIFIER;
+import static no.ssb.vtl.model.Component.Role.*;
 import static org.mockito.Mockito.*;
 
 public class ReferenceVisitorTest {
@@ -78,27 +79,31 @@ public class ReferenceVisitorTest {
         try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
             softly.assertThatThrownBy(() -> referenceVisitor.visit(parse("componentNotFound").componentRef()))
                     .describedAs("exception when component not found")
-                    .hasMessageContaining("variable")
-                    .hasMessageContaining("componentNotFound")
-                    .hasMessageContaining("not found");
+                    .hasCauseInstanceOf(SyntaxException.class)
+                    .hasStackTraceContaining("variable")
+                    .hasStackTraceContaining("componentNotFound")
+                    .hasStackTraceContaining("not found");
 
             softly.assertThatThrownBy(() -> referenceVisitor.visit(parse("dataset.componentNotFound").componentRef()))
                     .describedAs("exception when component not found")
-                    .hasMessageContaining("variable")
-                    .hasMessageContaining("componentNotFound")
-                    .hasMessageContaining("not found");
+                    .hasCauseInstanceOf(SyntaxException.class)
+                    .hasStackTraceContaining("variable")
+                    .hasStackTraceContaining("componentNotFound")
+                    .hasStackTraceContaining("not found");
 
             softly.assertThatThrownBy(() -> referenceVisitor.visit(parse("datasetNotFound").datasetRef()))
                     .describedAs("exception when component not found")
-                    .hasMessageContaining("variable")
-                    .hasMessageContaining("datasetNotFound")
-                    .hasMessageContaining("not found");
+                    .hasCauseInstanceOf(SyntaxException.class)
+                    .hasStackTraceContaining("variable")
+                    .hasStackTraceContaining("datasetNotFound")
+                    .hasStackTraceContaining("not found");
 
             softly.assertThatThrownBy(() -> referenceVisitor.visit(parse("variableNotFound").variable()))
                     .describedAs("exception when component not found")
-                    .hasMessageContaining("variable")
-                    .hasMessageContaining("variableNotFound")
-                    .hasMessageContaining("not found");
+                    .hasCauseInstanceOf(SyntaxException.class)
+                    .hasStackTraceContaining("variable")
+                    .hasStackTraceContaining("variableNotFound")
+                    .hasStackTraceContaining("not found");
 
         }
     }

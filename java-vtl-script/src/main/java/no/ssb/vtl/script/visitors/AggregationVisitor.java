@@ -26,6 +26,7 @@ import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLNumber;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.SyntaxException;
 import no.ssb.vtl.script.operations.AggregationOperation;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -53,7 +54,8 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
             dataset = (Dataset) referenceVisitor.visit(ctx.componentRef().datasetRef());
             Component aggregationComponent = getComponentFromDataset(dataset, ctx.componentRef().variable());
             return getSumOperation(dataset, getGroupByComponents(ctx, dataset), Collections.singletonList(aggregationComponent));
-        } throw new ParseCancellationException("Required parameters not found");
+        }
+        throw new ParseCancellationException(new SyntaxException("Required parameters not found", "VTL-01xx"));
     }
     
     private Component getComponentFromDataset(Dataset dataset, VTLParser.VariableContext componentRef) {
@@ -77,7 +79,7 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
                         .filter(component -> !idComponents.contains(component))
                         .collect(Collectors.toList());
             default:
-                throw new IllegalArgumentException("Unrecognized token: " + clause);
+                throw new ParseCancellationException(new SyntaxException("Unrecognized token: " + clause, "VTL-01xx"));
         }
     }
 

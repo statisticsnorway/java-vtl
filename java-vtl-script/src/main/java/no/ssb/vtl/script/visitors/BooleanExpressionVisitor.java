@@ -27,6 +27,7 @@ import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.model.VTLPredicate;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.SyntaxException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.Map;
@@ -62,7 +63,7 @@ public class BooleanExpressionVisitor extends VTLScalarExpressionVisitor<VTLPred
             case VTLParser.XOR:
                 return left.xor(right);
             default:
-                throw new ParseCancellationException("Unsupported boolean operation: " + ctx.op.getText());
+                throw new ParseCancellationException(new SyntaxException("Unsupported boolean operation: " + ctx.op.getText(), "VTL-01xx"));
         }
     }
 
@@ -94,7 +95,7 @@ public class BooleanExpressionVisitor extends VTLScalarExpressionVisitor<VTLPred
             case VTLParser.ISNOTNULL:
                 return getNotPredicate(getIsNullPredicate(ref));
             default:
-                throw new ParseCancellationException("Unsupported boolean postfix operator " + op);
+                throw new ParseCancellationException(new SyntaxException("Unsupported boolean postfix operator " + op, "VTL-01xx"));
         }
         
     }
@@ -128,7 +129,7 @@ public class BooleanExpressionVisitor extends VTLScalarExpressionVisitor<VTLPred
             case VTLParser.GT:
                 return (l, r) -> l.compareTo(r) > 0;
             default:
-                throw new ParseCancellationException("Unsupported boolean equality operator " + op);
+                throw new ParseCancellationException(new SyntaxException("Unsupported boolean equality operator " + op, "VTL-01xx"));
         }
     }
     

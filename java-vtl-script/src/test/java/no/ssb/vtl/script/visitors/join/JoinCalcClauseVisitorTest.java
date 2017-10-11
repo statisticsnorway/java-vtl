@@ -126,8 +126,8 @@ public class JoinCalcClauseVisitorTest {
             // TODO: This should happen during execution (when data is computed).
             VTLExpression result = visitor.visit(parser.joinCalcExpression());
             result.apply(DataPoint.create(Collections.emptyList()));
-        }).hasMessageContaining("variable")
-                .hasMessageContaining("notFoundVariable");
+        }).hasStackTraceContaining("variable")
+                .hasStackTraceContaining("notFoundVariable");
     }
 
     @Test

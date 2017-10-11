@@ -25,13 +25,15 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.SyntaxException;
+import no.ssb.vtl.script.error.TypeException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.Deque;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import static com.google.common.base.Preconditions.*;
+import static java.lang.String.*;
 
 /**
  * The reference visitor tries to find references to object in a Bindings.
@@ -60,11 +62,11 @@ public class ReferenceVisitor extends VTLBaseVisitor<Object> {
         if (instance != null) {
             return instance;
         }
-        throw new ParseCancellationException(
+        throw new ParseCancellationException(new SyntaxException(
                 format(
                         "variable [%s] not found",
                         expression
-                )
+                ), "VTL-01xx")
         );
     }
 
@@ -73,13 +75,13 @@ public class ReferenceVisitor extends VTLBaseVisitor<Object> {
             //noinspection unchecked
             return (T) instance;
         }
-        throw new ParseCancellationException(
+        throw new ParseCancellationException(new TypeException(
                 format(
                         "wrong type for [%s], expected %s, got %s",
                         expression,
                         clazz,
                         instance.getClass()
-                )
+                ), "VTL-02xx")
         );
     }
 
