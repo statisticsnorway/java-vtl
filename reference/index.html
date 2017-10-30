@@ -151,34 +151,43 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="first-level active"><a href="#vtl-reference">VTL Reference</a></li>
+        <li class="first-level active"><a href="#syntax">Syntax</a></li>
         
-            <li class="second-level"><a href="#lexical-structure">Lexical structure</a></li>
+            <li class="second-level"><a href="#variables">Variables</a></li>
             
-                <li class="third-level"><a href="#identifier">Identifier</a></li>
-            
-                <li class="third-level"><a href="#comments">Comments</a></li>
-            
-                <li class="third-level"><a href="#white-space">White space</a></li>
-            
-                <li class="third-level"><a href="#literals">Literals</a></li>
+        
+            <li class="second-level"><a href="#comments">Comments</a></li>
             
         
             <li class="second-level"><a href="#data-types">Data types</a></li>
             
-                <li class="third-level"><a href="#any">any</a></li>
+                <li class="third-level"><a href="#integers">Integers</a></li>
             
-                <li class="third-level"><a href="#scalars">Scalars</a></li>
+                <li class="third-level"><a href="#floats">Floats</a></li>
             
-                <li class="third-level"><a href="#collections">Collections</a></li>
+                <li class="third-level"><a href="#strings">Strings</a></li>
+            
+                <li class="third-level"><a href="#booleans">Booleans</a></li>
+            
+                <li class="third-level"><a href="#dates-and-time">Dates and time</a></li>
+            
+        
+    
+        <li class="first-level "><a href="#expression-and-operators">Expression and operators</a></li>
+        
+            <li class="second-level"><a href="#precedence">Precedence</a></li>
+            
+        
+            <li class="second-level"><a href="#arithmetic-operators">Arithmetic operators</a></li>
+            
+        
+            <li class="second-level"><a href="#mathematical-functions">Mathematical functions</a></li>
             
                 <li class="third-level"><a href="#datasets">Datasets</a></li>
             
                 <li class="third-level"><a href="#record">Record</a></li>
             
                 <li class="third-level"><a href="#product">Product</a></li>
-            
-                <li class="third-level"><a href="#function">Function</a></li>
             
                 <li class="third-level"><a href="#_1">()</a></li>
             
@@ -222,40 +231,143 @@
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="vtl-reference">VTL Reference</h1>
-<h2 id="lexical-structure">Lexical structure</h2>
-<h3 id="identifier">Identifier</h3>
-<h3 id="comments">Comments</h3>
-<h3 id="white-space">White space</h3>
-<h3 id="literals">Literals</h3>
-<p>Numbers, String, Dates, Periods etc.</p>
+<h1 id="syntax">Syntax</h1>
+<h2 id="variables">Variables</h2>
+<p>VTL support two type of variable names, regular names and escaped names.
+Regular variable names in must start with a letter followed by letters, numbers
+and the underscore (<code>_</code>) characters. Escaped variable names must be enclosed by single
+quotes (<code>'</code>) and can contain any characters except new lines. Single quotes can be escaped
+by doubling them.</p>
+<div vtl-example>
+    <vtl-code>
+variableName := value
+aVariableName1 := value
+'1Variable' := value
+'variable''with''quotes' := value
+    </vtl-code>
+</div>
+
+<h2 id="comments">Comments</h2>
+<p>Line comments are prefixed with two slashes ('//'). Block comments are
+surrounded by <code>/*</code> and <code>*/</code> and can contain new lines.</p>
+<div vtl-example>
+    <vtl-code>
+// Single line comment
+/*
+ * A block
+ * comment
+ */
+    </vtl-code>
+</div>
+
 <h2 id="data-types">Data types</h2>
-<h3 id="any">any</h3>
-<h3 id="scalars">Scalars</h3>
-<h4 id="scalar">scalar</h4>
-<h4 id="integers">integers</h4>
-<p>integer
-integer [a:]
-integer [:b]
-integer [a:b]
-integer {x1, ..., xn}</p>
-<h4 id="float">float</h4>
-<h4 id="null">null</h4>
-<h4 id="number">number</h4>
-<h4 id="boolean">boolean</h4>
-<h4 id="date">date</h4>
-<h4 id="strings">strings</h4>
-<p>string [a]
-string [a:b]
-string {s1, ..., sn}</p>
-<h3 id="collections">Collections</h3>
-<h4 id="list">list</h4>
-<h4 id="set">set</h4>
-<h4 id="collection">collection</h4>
+<h3 id="integers">Integers</h3>
+<div vtl-example>
+    <vtl-code>
+variable := 1
+variable := -1
+variable := 0
+    </vtl-code>
+</div>
+
+<h3 id="floats">Floats</h3>
+<div vtl-example>
+    <vtl-code>
+variable := -0.1e-10
+variable := -0.1e10
+variable := -0.1e+10
+variable := 0.1e-10
+variable := 0.1e10
+variable := 0.1e+10
+variable := +0.1e-10
+variable := +0.1e10
+variable := +0.1e+10
+variable := 0.01
+variable := -0.001
+variable := +0.0001
+    </vtl-code>
+</div>
+
+<h3 id="strings">Strings</h3>
+<div vtl-example>
+    <vtl-code>
+variable := "STRING"
+variable := "STR""ING"
+    </vtl-code>
+</div>
+
+<h3 id="booleans">Booleans</h3>
+<div vtl-example>
+     <vtl-code>
+variable := true
+variable := false
+     </vtl-code>
+ </div>
+
+<h3 id="dates-and-time">Dates and time</h3>
+<div vtl-example>
+     <vtl-code>
+variable := 2000-01-01T00:00:00.000Z
+variable := 2000-01-01T00:00:00.000+00:15
+     </vtl-code>
+ </div>
+
+<h1 id="expression-and-operators">Expression and operators</h1>
+<h2 id="precedence">Precedence</h2>
+<p>One can adjust the precedence of expressions in VTL using the parenthesis (<code>(</code> and <code>)</code>)</p>
+<div vtl-example>
+     <vtl-code>
+variable := ( expression )
+     </vtl-code>
+ </div>
+
+<h2 id="arithmetic-operators">Arithmetic operators</h2>
+<p>The multiplication, division, addition and subtraction operators can be
+used with Float and Integer types.</p>
+<div vtl-example>
+     <vtl-code>
+variable := 1 + 2 / 3 * 4
+     </vtl-code>
+ </div>
+
+<h2 id="mathematical-functions">Mathematical functions</h2>
+<div vtl-example>
+    <vtl-code>
+math := [data] {
+    posInteger := data.value,
+    negInteger := data.value * -1,
+    posFloat := data.value / 10,
+    negFloat := negInteger / 10,
+    absFn   := abs(negFloat),
+    logFn   := log(posInteger, posInteger),
+    ceilFn  := ceil(posFloat * 5),
+    floorFn := floor(posFloat * 5),
+    expFn   := exp(posFloat),
+    lnFn    := ln(posInteger),
+    logFn   := log(posInteger, posInteger),
+    powerFn := power(posInteger, posInteger),
+    nrootFn := nroot(posInteger, posInteger),
+    roundFn := round(posFloat, 2)
+}
+</vtl-code>
+    <vtl-dataset name="data">
+value[I,Long]
+1L
+3L
+4L
+5L
+6L
+7L
+8L
+9L
+10L
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
+
 <h3 id="datasets">Datasets</h3>
 <h3 id="record">Record</h3>
 <h3 id="product">Product</h3>
-<h3 id="function">Function</h3>
 <h3 id="_1">()</h3>
 <h2 id="join-expressions">Join expressions</h2>
 <h3 id="inner-join">Inner join</h3>
@@ -386,18 +498,18 @@ Sweden , 9M
 <div vtl-example>
     <vtl-code>
 join := [outer left, right] {
-    nvl_result := nvl(right.measure, "was null")
+    nvl_result := nvl(right.value, "was null")
 }
     </vtl-code>
     <vtl-dataset name="left">
-id1[I,String],id2[I,String],measure[M,String],attribute[A,String]
+id1[I,String],id2[I,String],value[M,String],attribute[A,String]
 1,3,left value 3, left attribute 3
 1,4,left value 4, left attribute 4
 1,5,left value 5, left attribute 5
 1,6,left value 6, left attribute 6
     </vtl-dataset>
     <vtl-dataset name="right">
-id1[I,String],id2[I,String],measure[M,String],attribute[A,String]
+id1[I,String],id2[I,String],value[M,String],attribute[A,String]
 1,1,right value 1, right attribute 1
 1,2,right value 2, right attribute 2
 1,3,right value 3, right attribute 3

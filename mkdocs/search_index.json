@@ -22,38 +22,23 @@
         }, 
         {
             "location": "/reference/", 
-            "text": "VTL Reference\n\n\nLexical structure\n\n\nIdentifier\n\n\nComments\n\n\nWhite space\n\n\nLiterals\n\n\nNumbers, String, Dates, Periods etc.\n\n\nData types\n\n\nany\n\n\nScalars\n\n\nscalar\n\n\nintegers\n\n\ninteger\ninteger [a:]\ninteger [:b]\ninteger [a:b]\ninteger {x1, ..., xn}\n\n\nfloat\n\n\nnull\n\n\nnumber\n\n\nboolean\n\n\ndate\n\n\nstrings\n\n\nstring [a]\nstring [a:b]\nstring {s1, ..., sn}\n\n\nCollections\n\n\nlist\n\n\nset\n\n\ncollection\n\n\nDatasets\n\n\nRecord\n\n\nProduct\n\n\nFunction\n\n\n()\n\n\nJoin expressions\n\n\nInner join\n\n\n\n    \n\ninnerJoin := [inner left, right] {\n    filter true\n}\n    \n\n    \n\nid[I,String],measure[M,String],attribute[A,String]\n3,left value 3, left attribute 3\n4,left value 4, left attribute 4\n5,left value 5, left attribute 5\n6,left value 6, left attribute 6\n    \n\n    \n\nid[I,String],measure[M,String],attribute[A,String]\n1,right value 1, right attribute 1\n2,right value 2, right attribute 2\n3,right value 3, right attribute 3\n4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\n\nOuter join\n\n\n\n    \n\nouterJoin := [outer left, right] {\n    filter true\n}\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\n\nFold clause\n\n\nFold transposes a single data point of the input Dataset into several\ndata points. It adds Identifier dim and measure msr to the resulting\nDataset, inserts into the resulting Dataset a data point for each value\nA in the element list and assigns to the inserted data point dim = A and\nmsr = value of measure A in the input Dataset.\n\n\nWhen measure A is null then fold does not create a data point for that\nmeasure. Note that in general unfolding and folding are not exactly\nsymmetric operations, i.e. in some cases the fold operation applied to\nthe unfolded Dataset does not recreate exactly the original Dataset\n(before unfolding).\n\n\n\n    \n\nfolded := [population] {\n    fold '0-14', '15-24', '25-64', '65+' to age, percent\n}\nunfolded := [folded] {\n    unfold age, percent to \"0-14\", \"15-24\"\n}\n    \n\n    \n\ncountry[I,String],0-14[M,String],15-24[M,String],25-64[M,String],65+[M,String]\nFrance ,18.1%,12.2%,51.0%,18.7%\nNorway ,18.6%,13.0%,52.0%,16.4%\nItaly  ,14.0%,9.8%,54.4%,21.7%\nSweden ,17.3%,12.2%,50.5%,20.0%\n    \n\n    \n\n\n\n\n\nUnfold\n\n\n\n    \n\nunfolded := [colors] {\n    unfold color, wavelength to \"indigo\", \"blue\", \"yellow\"\n}\n    \n\n    \n\ncolor[I,String],wavelength[M,String]\nblue, 475nm\nindigo, 445nm\norange, 570nm\nred, 650nm\nviolet, 400 nm\nyellow, 510nm\n    \n\n    \n\n\n\n\n\nCheck operators\n\n\nThe check operators are used to validate data sets. Three check operator\n variants are available, check with rule sets, check with hierarchical\n rule sets and check with single boolean rule.\n\n\nThe return value of the check function depend of parameters.\nWhen used with the parameter \"condition\", the resulting dataset will only\n contain a condition measure of type Boolean indicating if the DataPoint\n is valid according to the rule set, hierarchical rule set or boolean\n expression.\nWith the parameter \"measures\", the resulting dataset contains all the\nmeasures of the input dataset.\n\n\nCheck with single rule\n\n\n\n    \n\nfolded := check(data.valid \n \"na\")\n    \n\n    \n\ncountry[I,String],population[M,String]\nFrance , 64M\nNorway , 5M\nItaly  , na\nSweden , 9M\n    \n\n    \n\n\n\n\nConditional operators\n\n\nnvl\n\n\nThe operator nvl replaces null values with a value given as a parameter.\n\n\n    \n\njoin := [outer left, right] {\n    nvl_result := nvl(right.measure, \"was null\")\n}\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\nBoolean operators\n\n\nNull operators\n\n\nVTL adopts 3VL (three-value logic); null is not considered a \"value\",\n but rather a marker (or placeholder) indicating the absence of value.\n\n\n\n\n\n\n\n\np\n\n\nq\n\n\np\n  OR \nq\n\n\np\n  AND \nq\n\n\np\n  = \nq\n\n\n\n\n\n\n\n\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\n\n\n\n\nTrue\n\n\nFalse\n\n\nTrue\n\n\nFalse\n\n\nFalse\n\n\n\n\n\n\nTrue\n\n\nUnknown\n\n\nTrue\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\nFalse\n\n\nTrue\n\n\nTrue\n\n\nFalse\n\n\nFalse\n\n\n\n\n\n\nFalse\n\n\nFalse\n\n\nFalse\n\n\nFalse\n\n\nTrue\n\n\n\n\n\n\nFalse\n\n\nUnknown\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nTrue\n\n\nTrue\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\n\n\n\n\n\n\n\n\np\n\n\nNOT \np\n\n\n\n\n\n\n\n\n\n\nTrue\n\n\nFalse\n\n\n\n\n\n\nFalse\n\n\nTrue\n\n\n\n\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\n\n\nNull in boolean operators evaluates to false. In order to test whether\n or not a value is null one can use the postfix operator \nis null\n or\n \nis not null\n as well as the functional equivalents \nisnull()\n or\n \nnot(isnull())\n.\n\n\n\n    \n\npostfixIsNull := [data] {\n    filter value is null\n}\npostfixIsNotNull := [data] {\n    filter value is not null\n}\n\nfunctionalIsNull := [data] {\n    filter isnull(value) \n}\n\nfunctionalIsNotNull := [data] {\n    filter not(isnull(value))\n}\n    \n\n    \n\ncountry[I,String],value[M,String]\nNull , null\nNotNull , value\n    \n\n    \n\n\n\n\n\nHierarchy operator\n\n\nThe hierarchy operator aggregates all measures of a dataset mapping one\nidentifier with a hierarchy.\n\n\nFor instance, consider the following hierarchy:\n\n\n\n\nWorld\n\n\nEurope\n\n\nEastern Europe\n\n\nPoland\n\n\nUkraine\n\n\nRomania\n\n\nHungary\n\n\nSlovakia\n\n\n...\n\n\n\n\n\n\nNorthern Europe\n\n\nDenmark\n\n\nNorway\n\n\nSweden\n\n\nIceland\n\n\n...\n\n\n\n\n\n\nSouthern Europe\n\n\nItaly\n\n\nSpain\n\n\nPortugal\n\n\n...\n\n\n\n\n\n\nWestern Europe\n\n\nBelgium\n\n\nFrance\n\n\n...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n    \n\nresult := hierarchy(data, data.region, world, true)\n    \n\n    \n\nyear[I,String],region[I,String],pop[M,Long]\n2000,Belgium,2000L\n2000,Denmark,2000L\n2000,France,2000L\n2000,Hungary,2000L\n2000,Iceland,2000L\n2000,Italy,2000L\n2000,Norway,2000L\n2000,Poland,2000L\n2000,Portugal,2000L\n2000,Romania,2000L\n2000,Slovakia,2000L\n2000,Spain,2000L\n2000,Sweden,2000L\n2000,Ukraine,2000L\n2002,Belgium,2002L\n2002,Denmark,2002L\n2002,France,2002L\n2002,Hungary,2002L\n2002,Iceland,2002L\n2002,Italy,2002L\n2002,Norway,2002L\n2002,Poland,2002L\n2002,Portugal,2002L\n2002,Romania,2002L\n2002,Slovakia,2002L\n2002,Spain,2002L\n2002,Sweden,2002L\n2002,Ukraine,2002L\n2004,Belgium,2004L\n2004,Denmark,2004L\n2004,France,2004L\n2004,Hungary,2004L\n2004,Iceland,2004L\n2004,Italy,2004L\n2004,Norway,2004L\n2004,Poland,2004L\n2004,Portugal,2004L\n2004,Romania,2004L\n2004,Slovakia,2004L\n2004,Spain,2004L\n2004,Sweden,2004L\n2004,Ukraine,2004L\n    \n\n    \n\nfrom[I,String],to[I,String],sign[M,String]\nWestern Europe,Europe,+\nEastern Europe,Europe,+\nSouthern Europe,Europe,+\nNorthern Europe,Europe,+\nBelgium,Western Europe,+\nDenmark,Northern Europe,+\nFrance,Western Europe,+\nHungary,Eastern Europe,+\nIceland,Northern Europe,+\nItaly,Southern Europe,+\nNorway,Northern Europe,+\nPoland,Eastern Europe,+\nPortugal,Southern Europe,+\nRomania,Eastern Europe,+\nSlovakia,Eastern Europe,+\nSpain,Southern Europe,+\nSweden,Northern Europe,+\nUkraine,Eastern Europe,+\n        \n\n    \n\n\n\n\n\nString operators\n\n\ndate_from_string\n\n\nThe operator date_from_string converts a string into a date.\n\n\n    \n\njoin := [left] {\n    b := date_from_string(M1, \"YYYY\")\n}\n    \n\n    \n\nID[I,String],M1[M,String]\n1 , 2016\n2 , 2017\n3 , null", 
+            "text": "Syntax\n\n\nVariables\n\n\nVTL support two type of variable names, regular names and escaped names.\nRegular variable names in must start with a letter followed by letters, numbers\nand the underscore (\n_\n) characters. Escaped variable names must be enclosed by single\nquotes (\n'\n) and can contain any characters except new lines. Single quotes can be escaped\nby doubling them.\n\n\n\n    \n\nvariableName := value\naVariableName1 := value\n'1Variable' := value\n'variable''with''quotes' := value\n    \n\n\n\n\n\nComments\n\n\nLine comments are prefixed with two slashes ('//'). Block comments are\nsurrounded by \n/*\n and \n*/\n and can contain new lines.\n\n\n\n    \n\n// Single line comment\n/*\n * A block\n * comment\n */\n    \n\n\n\n\n\nData types\n\n\nIntegers\n\n\n\n    \n\nvariable := 1\nvariable := -1\nvariable := 0\n    \n\n\n\n\n\nFloats\n\n\n\n    \n\nvariable := -0.1e-10\nvariable := -0.1e10\nvariable := -0.1e+10\nvariable := 0.1e-10\nvariable := 0.1e10\nvariable := 0.1e+10\nvariable := +0.1e-10\nvariable := +0.1e10\nvariable := +0.1e+10\nvariable := 0.01\nvariable := -0.001\nvariable := +0.0001\n    \n\n\n\n\n\nStrings\n\n\n\n    \n\nvariable := \"STRING\"\nvariable := \"STR\"\"ING\"\n    \n\n\n\n\n\nBooleans\n\n\n\n     \n\nvariable := true\nvariable := false\n     \n\n \n\n\n\nDates and time\n\n\n\n     \n\nvariable := 2000-01-01T00:00:00.000Z\nvariable := 2000-01-01T00:00:00.000+00:15\n     \n\n \n\n\n\nExpression and operators\n\n\nPrecedence\n\n\nOne can adjust the precedence of expressions in VTL using the parenthesis (\n(\n and \n)\n)\n\n\n\n     \n\nvariable := ( expression )\n     \n\n \n\n\n\nArithmetic operators\n\n\nThe multiplication, division, addition and subtraction operators can be\nused with Float and Integer types.\n\n\n\n     \n\nvariable := 1 + 2 / 3 * 4\n     \n\n \n\n\n\nMathematical functions\n\n\n\n    \n\nmath := [data] {\n    posInteger := data.value,\n    negInteger := data.value * -1,\n    posFloat := data.value / 10,\n    negFloat := negInteger / 10,\n    absFn   := abs(negFloat),\n    logFn   := log(posInteger, posInteger),\n    ceilFn  := ceil(posFloat * 5),\n    floorFn := floor(posFloat * 5),\n    expFn   := exp(posFloat),\n    lnFn    := ln(posInteger),\n    logFn   := log(posInteger, posInteger),\n    powerFn := power(posInteger, posInteger),\n    nrootFn := nroot(posInteger, posInteger),\n    roundFn := round(posFloat, 2)\n}\n\n\n    \n\nvalue[I,Long]\n1L\n3L\n4L\n5L\n6L\n7L\n8L\n9L\n10L\n    \n\n    \n\n\n\n\n\nDatasets\n\n\nRecord\n\n\nProduct\n\n\n()\n\n\nJoin expressions\n\n\nInner join\n\n\n\n    \n\ninnerJoin := [inner left, right] {\n    filter true\n}\n    \n\n    \n\nid[I,String],measure[M,String],attribute[A,String]\n3,left value 3, left attribute 3\n4,left value 4, left attribute 4\n5,left value 5, left attribute 5\n6,left value 6, left attribute 6\n    \n\n    \n\nid[I,String],measure[M,String],attribute[A,String]\n1,right value 1, right attribute 1\n2,right value 2, right attribute 2\n3,right value 3, right attribute 3\n4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\n\nOuter join\n\n\n\n    \n\nouterJoin := [outer left, right] {\n    filter true\n}\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n    \n\n    \n\nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\n\nFold clause\n\n\nFold transposes a single data point of the input Dataset into several\ndata points. It adds Identifier dim and measure msr to the resulting\nDataset, inserts into the resulting Dataset a data point for each value\nA in the element list and assigns to the inserted data point dim = A and\nmsr = value of measure A in the input Dataset.\n\n\nWhen measure A is null then fold does not create a data point for that\nmeasure. Note that in general unfolding and folding are not exactly\nsymmetric operations, i.e. in some cases the fold operation applied to\nthe unfolded Dataset does not recreate exactly the original Dataset\n(before unfolding).\n\n\n\n    \n\nfolded := [population] {\n    fold '0-14', '15-24', '25-64', '65+' to age, percent\n}\nunfolded := [folded] {\n    unfold age, percent to \"0-14\", \"15-24\"\n}\n    \n\n    \n\ncountry[I,String],0-14[M,String],15-24[M,String],25-64[M,String],65+[M,String]\nFrance ,18.1%,12.2%,51.0%,18.7%\nNorway ,18.6%,13.0%,52.0%,16.4%\nItaly  ,14.0%,9.8%,54.4%,21.7%\nSweden ,17.3%,12.2%,50.5%,20.0%\n    \n\n    \n\n\n\n\n\nUnfold\n\n\n\n    \n\nunfolded := [colors] {\n    unfold color, wavelength to \"indigo\", \"blue\", \"yellow\"\n}\n    \n\n    \n\ncolor[I,String],wavelength[M,String]\nblue, 475nm\nindigo, 445nm\norange, 570nm\nred, 650nm\nviolet, 400 nm\nyellow, 510nm\n    \n\n    \n\n\n\n\n\nCheck operators\n\n\nThe check operators are used to validate data sets. Three check operator\n variants are available, check with rule sets, check with hierarchical\n rule sets and check with single boolean rule.\n\n\nThe return value of the check function depend of parameters.\nWhen used with the parameter \"condition\", the resulting dataset will only\n contain a condition measure of type Boolean indicating if the DataPoint\n is valid according to the rule set, hierarchical rule set or boolean\n expression.\nWith the parameter \"measures\", the resulting dataset contains all the\nmeasures of the input dataset.\n\n\nCheck with single rule\n\n\n\n    \n\nfolded := check(data.valid \n \"na\")\n    \n\n    \n\ncountry[I,String],population[M,String]\nFrance , 64M\nNorway , 5M\nItaly  , na\nSweden , 9M\n    \n\n    \n\n\n\n\nConditional operators\n\n\nnvl\n\n\nThe operator nvl replaces null values with a value given as a parameter.\n\n\n    \n\njoin := [outer left, right] {\n    nvl_result := nvl(right.value, \"was null\")\n}\n    \n\n    \n\nid1[I,String],id2[I,String],value[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n    \n\n    \n\nid1[I,String],id2[I,String],value[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4\n    \n\n    \n\n\n\n\nBoolean operators\n\n\nNull operators\n\n\nVTL adopts 3VL (three-value logic); null is not considered a \"value\",\n but rather a marker (or placeholder) indicating the absence of value.\n\n\n\n\n\n\n\n\np\n\n\nq\n\n\np\n  OR \nq\n\n\np\n  AND \nq\n\n\np\n  = \nq\n\n\n\n\n\n\n\n\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\nTrue\n\n\n\n\n\n\nTrue\n\n\nFalse\n\n\nTrue\n\n\nFalse\n\n\nFalse\n\n\n\n\n\n\nTrue\n\n\nUnknown\n\n\nTrue\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\nFalse\n\n\nTrue\n\n\nTrue\n\n\nFalse\n\n\nFalse\n\n\n\n\n\n\nFalse\n\n\nFalse\n\n\nFalse\n\n\nFalse\n\n\nTrue\n\n\n\n\n\n\nFalse\n\n\nUnknown\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nTrue\n\n\nTrue\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\nFalse\n\n\nUnknown\n\n\n\n\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\n\n\n\n\n\n\n\n\np\n\n\nNOT \np\n\n\n\n\n\n\n\n\n\n\nTrue\n\n\nFalse\n\n\n\n\n\n\nFalse\n\n\nTrue\n\n\n\n\n\n\nUnknown\n\n\nUnknown\n\n\n\n\n\n\n\n\nNull in boolean operators evaluates to false. In order to test whether\n or not a value is null one can use the postfix operator \nis null\n or\n \nis not null\n as well as the functional equivalents \nisnull()\n or\n \nnot(isnull())\n.\n\n\n\n    \n\npostfixIsNull := [data] {\n    filter value is null\n}\npostfixIsNotNull := [data] {\n    filter value is not null\n}\n\nfunctionalIsNull := [data] {\n    filter isnull(value) \n}\n\nfunctionalIsNotNull := [data] {\n    filter not(isnull(value))\n}\n    \n\n    \n\ncountry[I,String],value[M,String]\nNull , null\nNotNull , value\n    \n\n    \n\n\n\n\n\nHierarchy operator\n\n\nThe hierarchy operator aggregates all measures of a dataset mapping one\nidentifier with a hierarchy.\n\n\nFor instance, consider the following hierarchy:\n\n\n\n\nWorld\n\n\nEurope\n\n\nEastern Europe\n\n\nPoland\n\n\nUkraine\n\n\nRomania\n\n\nHungary\n\n\nSlovakia\n\n\n...\n\n\n\n\n\n\nNorthern Europe\n\n\nDenmark\n\n\nNorway\n\n\nSweden\n\n\nIceland\n\n\n...\n\n\n\n\n\n\nSouthern Europe\n\n\nItaly\n\n\nSpain\n\n\nPortugal\n\n\n...\n\n\n\n\n\n\nWestern Europe\n\n\nBelgium\n\n\nFrance\n\n\n...\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n    \n\nresult := hierarchy(data, data.region, world, true)\n    \n\n    \n\nyear[I,String],region[I,String],pop[M,Long]\n2000,Belgium,2000L\n2000,Denmark,2000L\n2000,France,2000L\n2000,Hungary,2000L\n2000,Iceland,2000L\n2000,Italy,2000L\n2000,Norway,2000L\n2000,Poland,2000L\n2000,Portugal,2000L\n2000,Romania,2000L\n2000,Slovakia,2000L\n2000,Spain,2000L\n2000,Sweden,2000L\n2000,Ukraine,2000L\n2002,Belgium,2002L\n2002,Denmark,2002L\n2002,France,2002L\n2002,Hungary,2002L\n2002,Iceland,2002L\n2002,Italy,2002L\n2002,Norway,2002L\n2002,Poland,2002L\n2002,Portugal,2002L\n2002,Romania,2002L\n2002,Slovakia,2002L\n2002,Spain,2002L\n2002,Sweden,2002L\n2002,Ukraine,2002L\n2004,Belgium,2004L\n2004,Denmark,2004L\n2004,France,2004L\n2004,Hungary,2004L\n2004,Iceland,2004L\n2004,Italy,2004L\n2004,Norway,2004L\n2004,Poland,2004L\n2004,Portugal,2004L\n2004,Romania,2004L\n2004,Slovakia,2004L\n2004,Spain,2004L\n2004,Sweden,2004L\n2004,Ukraine,2004L\n    \n\n    \n\nfrom[I,String],to[I,String],sign[M,String]\nWestern Europe,Europe,+\nEastern Europe,Europe,+\nSouthern Europe,Europe,+\nNorthern Europe,Europe,+\nBelgium,Western Europe,+\nDenmark,Northern Europe,+\nFrance,Western Europe,+\nHungary,Eastern Europe,+\nIceland,Northern Europe,+\nItaly,Southern Europe,+\nNorway,Northern Europe,+\nPoland,Eastern Europe,+\nPortugal,Southern Europe,+\nRomania,Eastern Europe,+\nSlovakia,Eastern Europe,+\nSpain,Southern Europe,+\nSweden,Northern Europe,+\nUkraine,Eastern Europe,+\n        \n\n    \n\n\n\n\n\nString operators\n\n\ndate_from_string\n\n\nThe operator date_from_string converts a string into a date.\n\n\n    \n\njoin := [left] {\n    b := date_from_string(M1, \"YYYY\")\n}\n    \n\n    \n\nID[I,String],M1[M,String]\n1 , 2016\n2 , 2017\n3 , null", 
             "title": "Reference"
         }, 
         {
-            "location": "/reference/#vtl-reference", 
+            "location": "/reference/#syntax", 
             "text": "", 
-            "title": "VTL Reference"
+            "title": "Syntax"
         }, 
         {
-            "location": "/reference/#lexical-structure", 
-            "text": "", 
-            "title": "Lexical structure"
-        }, 
-        {
-            "location": "/reference/#identifier", 
-            "text": "", 
-            "title": "Identifier"
+            "location": "/reference/#variables", 
+            "text": "VTL support two type of variable names, regular names and escaped names.\nRegular variable names in must start with a letter followed by letters, numbers\nand the underscore ( _ ) characters. Escaped variable names must be enclosed by single\nquotes ( ' ) and can contain any characters except new lines. Single quotes can be escaped\nby doubling them.  \n     \nvariableName := value\naVariableName1 := value\n'1Variable' := value\n'variable''with''quotes' := value", 
+            "title": "Variables"
         }, 
         {
             "location": "/reference/#comments", 
-            "text": "", 
+            "text": "Line comments are prefixed with two slashes ('//'). Block comments are\nsurrounded by  /*  and  */  and can contain new lines.  \n     \n// Single line comment\n/*\n * A block\n * comment\n */", 
             "title": "Comments"
-        }, 
-        {
-            "location": "/reference/#white-space", 
-            "text": "", 
-            "title": "White space"
-        }, 
-        {
-            "location": "/reference/#literals", 
-            "text": "Numbers, String, Dates, Periods etc.", 
-            "title": "Literals"
         }, 
         {
             "location": "/reference/#data-types", 
@@ -61,74 +46,49 @@
             "title": "Data types"
         }, 
         {
-            "location": "/reference/#any", 
-            "text": "", 
-            "title": "any"
-        }, 
-        {
-            "location": "/reference/#scalars", 
-            "text": "", 
-            "title": "Scalars"
-        }, 
-        {
-            "location": "/reference/#scalar", 
-            "text": "", 
-            "title": "scalar"
-        }, 
-        {
             "location": "/reference/#integers", 
-            "text": "integer\ninteger [a:]\ninteger [:b]\ninteger [a:b]\ninteger {x1, ..., xn}", 
-            "title": "integers"
+            "text": "variable := 1\nvariable := -1\nvariable := 0", 
+            "title": "Integers"
         }, 
         {
-            "location": "/reference/#float", 
-            "text": "", 
-            "title": "float"
-        }, 
-        {
-            "location": "/reference/#null", 
-            "text": "", 
-            "title": "null"
-        }, 
-        {
-            "location": "/reference/#number", 
-            "text": "", 
-            "title": "number"
-        }, 
-        {
-            "location": "/reference/#boolean", 
-            "text": "", 
-            "title": "boolean"
-        }, 
-        {
-            "location": "/reference/#date", 
-            "text": "", 
-            "title": "date"
+            "location": "/reference/#floats", 
+            "text": "variable := -0.1e-10\nvariable := -0.1e10\nvariable := -0.1e+10\nvariable := 0.1e-10\nvariable := 0.1e10\nvariable := 0.1e+10\nvariable := +0.1e-10\nvariable := +0.1e10\nvariable := +0.1e+10\nvariable := 0.01\nvariable := -0.001\nvariable := +0.0001", 
+            "title": "Floats"
         }, 
         {
             "location": "/reference/#strings", 
-            "text": "string [a]\nstring [a:b]\nstring {s1, ..., sn}", 
-            "title": "strings"
+            "text": "variable := \"STRING\"\nvariable := \"STR\"\"ING\"", 
+            "title": "Strings"
         }, 
         {
-            "location": "/reference/#collections", 
-            "text": "", 
-            "title": "Collections"
+            "location": "/reference/#booleans", 
+            "text": "variable := true\nvariable := false", 
+            "title": "Booleans"
         }, 
         {
-            "location": "/reference/#list", 
-            "text": "", 
-            "title": "list"
+            "location": "/reference/#dates-and-time", 
+            "text": "variable := 2000-01-01T00:00:00.000Z\nvariable := 2000-01-01T00:00:00.000+00:15", 
+            "title": "Dates and time"
         }, 
         {
-            "location": "/reference/#set", 
+            "location": "/reference/#expression-and-operators", 
             "text": "", 
-            "title": "set"
+            "title": "Expression and operators"
         }, 
         {
-            "location": "/reference/#collection", 
-            "text": "", 
-            "title": "collection"
+            "location": "/reference/#precedence", 
+            "text": "One can adjust the precedence of expressions in VTL using the parenthesis ( (  and  ) )  \n      \nvariable := ( expression )", 
+            "title": "Precedence"
+        }, 
+        {
+            "location": "/reference/#arithmetic-operators", 
+            "text": "The multiplication, division, addition and subtraction operators can be\nused with Float and Integer types.  \n      \nvariable := 1 + 2 / 3 * 4", 
+            "title": "Arithmetic operators"
+        }, 
+        {
+            "location": "/reference/#mathematical-functions", 
+            "text": "math := [data] {\n    posInteger := data.value,\n    negInteger := data.value * -1,\n    posFloat := data.value / 10,\n    negFloat := negInteger / 10,\n    absFn   := abs(negFloat),\n    logFn   := log(posInteger, posInteger),\n    ceilFn  := ceil(posFloat * 5),\n    floorFn := floor(posFloat * 5),\n    expFn   := exp(posFloat),\n    lnFn    := ln(posInteger),\n    logFn   := log(posInteger, posInteger),\n    powerFn := power(posInteger, posInteger),\n    nrootFn := nroot(posInteger, posInteger),\n    roundFn := round(posFloat, 2)\n} \n     \nvalue[I,Long]\n1L\n3L\n4L\n5L\n6L\n7L\n8L\n9L\n10L", 
+            "title": "Mathematical functions"
         }, 
         {
             "location": "/reference/#datasets", 
@@ -144,11 +104,6 @@
             "location": "/reference/#product", 
             "text": "", 
             "title": "Product"
-        }, 
-        {
-            "location": "/reference/#function", 
-            "text": "", 
-            "title": "Function"
         }, 
         {
             "location": "/reference/#_1", 
@@ -197,7 +152,7 @@
         }, 
         {
             "location": "/reference/#nvl", 
-            "text": "The operator nvl replaces null values with a value given as a parameter. \n     \njoin := [outer left, right] {\n    nvl_result := nvl(right.measure, \"was null\")\n}\n     \n     \nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n     \n     \nid1[I,String],id2[I,String],measure[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4", 
+            "text": "The operator nvl replaces null values with a value given as a parameter. \n     \njoin := [outer left, right] {\n    nvl_result := nvl(right.value, \"was null\")\n}\n     \n     \nid1[I,String],id2[I,String],value[M,String],attribute[A,String]\n1,3,left value 3, left attribute 3\n1,4,left value 4, left attribute 4\n1,5,left value 5, left attribute 5\n1,6,left value 6, left attribute 6\n     \n     \nid1[I,String],id2[I,String],value[M,String],attribute[A,String]\n1,1,right value 1, right attribute 1\n1,2,right value 2, right attribute 2\n1,3,right value 3, right attribute 3\n1,4,right value 4, right attribute 4", 
             "title": "nvl"
         }, 
         {
