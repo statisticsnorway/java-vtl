@@ -183,6 +183,22 @@
         
             <li class="second-level"><a href="#mathematical-functions">Mathematical functions</a></li>
             
+                <li class="third-level"><a href="#abs-function">Abs function</a></li>
+            
+                <li class="third-level"><a href="#ceil-and-floor-functions">Ceil and Floor functions</a></li>
+            
+                <li class="third-level"><a href="#trunc-and-round-functions">Trunc and Round functions</a></li>
+            
+                <li class="third-level"><a href="#ln-function-napierian-logarithm">Ln function (Napierian logarithm)</a></li>
+            
+                <li class="third-level"><a href="#exp-function">Exp function</a></li>
+            
+                <li class="third-level"><a href="#power-function">Power function</a></li>
+            
+                <li class="third-level"><a href="#sqrt-function">Sqrt function</a></li>
+            
+                <li class="third-level"><a href="#nroot-function">Nroot function</a></li>
+            
                 <li class="third-level"><a href="#datasets">Datasets</a></li>
             
                 <li class="third-level"><a href="#record">Record</a></li>
@@ -262,14 +278,14 @@ surrounded by <code>/*</code> and <code>*/</code> and can contain new lines.</p>
 
 <h2 id="data-types">Data types</h2>
 <h3 id="integers">Integers</h3>
+<p>Valid integers in VTL are any number between
 <div vtl-example>
     <vtl-code>
 variable := 1
 variable := -1
 variable := 0
     </vtl-code>
-</div>
-
+</div></p>
 <h3 id="floats">Floats</h3>
 <div vtl-example>
     <vtl-code>
@@ -330,7 +346,18 @@ variable := 1 + 2 / 3 * 4
      </vtl-code>
  </div>
 
+<p>If Floats and Integers are mixed in the same arithmetic expression the
+resulting number will be Float</p>
+<div vtl-example>
+     <vtl-code>
+floatVariable := 1 + 2.0
+floatVariable := 1 * 1.0
+     </vtl-code>
+ </div>
+
 <h2 id="mathematical-functions">Mathematical functions</h2>
+<p>In addition to the arithmetic operators, basic mathematical operations
+are available as functions.</p>
 <div vtl-example>
     <vtl-code>
 math := [data] {
@@ -364,6 +391,63 @@ value[I,Long]
     </vtl-dataset>
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
 </div>
+
+<h3 id="abs-function">Abs function</h3>
+<p>The <code>abs</code> function takes an <em>Integer</em> or a
+<em>Float</em> value and returns its absolute value.</p>
+<pre>
+    Float   abs(Float value)
+    Integer abs(Integer value)
+</pre>
+
+<h3 id="ceil-and-floor-functions">Ceil and Floor functions</h3>
+<pre>
+    Integer floor(Float value)
+    Integer ceil(Float value)
+</pre>
+
+<p>The <code>ceil</code> and <code>floor</code> functions take as input a <em>Float</em> value and
+return an <em>Integer</em> value.</p>
+<p><code>ceil</code> will return the smallest <em>Integer</em> value that is greater than the
+given value.</p>
+<p><code>floor</code> will return the largest <em>Integer</em> value that is smaller than the
+given value.</p>
+<h3 id="trunc-and-round-functions">Trunc and Round functions</h3>
+<pre>
+    Float trunc(Float value, Integer decimals)
+    Float floor(Float value, Integer decimals)
+</pre>
+
+<p>The <code>trunc</code> and 'round' functions take as input a <em>Float</em> value and an
+<em>Integer</em> that represent a number of decimals. Both <code>trunc</code> and <code>round</code>
+return a <em>Float</em>.</p>
+<p><code>trunc</code> will wil truncate to the decimals whereas <code>round</code> will round up
+to the decimals.</p>
+<h3 id="ln-function-napierian-logarithm">Ln function (Napierian logarithm)</h3>
+<pre>
+    Float ln(Float value)
+</pre>
+
+<h3 id="exp-function">Exp function</h3>
+<pre>
+    Float exp(Integer value)
+    Float exp(Float value)
+</pre>
+
+<h3 id="power-function">Power function</h3>
+<pre>
+    Float power(Float value, Float exponent)
+</pre>
+
+<h3 id="sqrt-function">Sqrt function</h3>
+<pre>
+    Float sqrt(Float value)
+</pre>
+
+<h3 id="nroot-function">Nroot function</h3>
+<pre>
+    Float nroot(Float value, Float n)
+</pre>
 
 <h3 id="datasets">Datasets</h3>
 <h3 id="record">Record</h3>
