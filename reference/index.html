@@ -181,6 +181,12 @@
             <li class="second-level"><a href="#arithmetic-operators">Arithmetic operators</a></li>
             
         
+            <li class="second-level"><a href="#concatenation-operator">Concatenation operator</a></li>
+            
+        
+            <li class="second-level"><a href="#string-functions">String functions</a></li>
+            
+        
             <li class="second-level"><a href="#mathematical-functions">Mathematical functions</a></li>
             
                 <li class="third-level"><a href="#abs-function">Abs function</a></li>
@@ -239,6 +245,8 @@
         
             <li class="second-level"><a href="#string-operators">String operators</a></li>
             
+                <li class="third-level"><a href="#substr">substr</a></li>
+            
                 <li class="third-level"><a href="#date_from_string">date_from_string</a></li>
             
         
@@ -278,14 +286,14 @@ surrounded by <code>/*</code> and <code>*/</code> and can contain new lines.</p>
 
 <h2 id="data-types">Data types</h2>
 <h3 id="integers">Integers</h3>
-<p>Valid integers in VTL are any number between
 <div vtl-example>
     <vtl-code>
 variable := 1
 variable := -1
 variable := 0
     </vtl-code>
-</div></p>
+</div>
+
 <h3 id="floats">Floats</h3>
 <div vtl-example>
     <vtl-code>
@@ -353,7 +361,42 @@ resulting number will be Float</p>
 floatVariable := 1 + 2.0
 floatVariable := 1 * 1.0
      </vtl-code>
- </div>
+</div>
+
+<h2 id="concatenation-operator">Concatenation operator</h2>
+<p>The concatenation operator <code>||</code> concatenate two strings.</p>
+<div vtl-example>
+    <vtl-code>
+contac := [data] {
+    result := left || " " || right
+}
+</vtl-code>
+    <vtl-dataset name="data">
+left[I,String],right[I,String]
+Hello,World
+null,World
+Hello,null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
+
+<h2 id="string-functions">String functions</h2>
+<div vtl-example>
+    <vtl-code>
+strings := [data] {
+    withTrailingSpc := "   " || value || "   ",
+    rightTrim := "[" || rtrim(withTrailingSpc) || "]",
+    leftTrim := "[" || ltrim(withTrailingSpc) || "]",
+    'trim' := "[" || trim(withTrailingSpc) || "]",
+    noTrim := "[" || withTrailingSpc || "]"
+}
+</vtl-code>
+    <vtl-dataset name="data">
+id[I,Long],value[M,String]
+1L,Hello World!
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
 
 <h2 id="mathematical-functions">Mathematical functions</h2>
 <p>In addition to the arithmetic operators, basic mathematical operations
@@ -848,6 +891,29 @@ Ukraine,Eastern Europe,+
 </div>
 
 <h2 id="string-operators">String operators</h2>
+<h3 id="substr">substr</h3>
+<p><pre>
+    String substr(Integer startPosition, Integer length)
+</pre></p>
+<p>The <code>substr</code> operator takes as input <code>startPosition</code> which is the index of the character
+in the string from which the substring is performed and <code>length</code> which is the number of
+the characters in the string to be taken starting from <code>startPosition</code>. 
+The operator returns a <em>String</em> value.</p>
+<div vtl-example>
+    <vtl-code>
+result := [data] {
+    sub := substr(M1, 5, 6)
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+ID[I,String],M1[M,String]
+1 , hello world
+2 , hello
+3 , null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
+
 <h3 id="date_from_string">date_from_string</h3>
 <p>The operator date_from_string converts a string into a date.
 <div vtl-example>
