@@ -186,6 +186,10 @@
         
             <li class="second-level"><a href="#string-functions">String functions</a></li>
             
+                <li class="third-level"><a href="#trim-ltrim-and-rtrim-functions">Trim, ltrim and rtrim functions</a></li>
+            
+                <li class="third-level"><a href="#upper-and-lower-function">Upper and lower function</a></li>
+            
         
             <li class="second-level"><a href="#mathematical-functions">Mathematical functions</a></li>
             
@@ -398,6 +402,29 @@ id[I,Long],value[M,String]
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
 </div>
 
+<h3 id="trim-ltrim-and-rtrim-functions">Trim, ltrim and rtrim functions</h3>
+<p>The <code>trim</code>, <code>ltrim</code> and <code>rtrim</code> take a <em>String</em> as input and return a
+<em>String</em>.</p>
+<p>The <code>ltrim</code> and <code>rtrim</code> functions remove leading (to the left and
+trailing (to the right) white characters from the given <em>String</em>,
+respectively.</p>
+<p>The <code>trim</code> functions remove both the leading and trailing white
+characters.</p>
+<pre>
+    String   trim(String value)
+    String  rtrim(String value)
+    String  ltrim(String value)
+</pre>
+
+<h3 id="upper-and-lower-function">Upper and lower function</h3>
+<pre>
+    String  upper(String value)
+    String  lower(String value)
+</pre>
+
+<p>The <code>upper</code> function transforms all of the characters of the given
+<em>String</em> to upper case. The <code>lower</code> functions transforms all the
+characters of the given <em>String</em> to lower case.</p>
 <h2 id="mathematical-functions">Mathematical functions</h2>
 <p>In addition to the arithmetic operators, basic mathematical operations
 are available as functions.</p>
@@ -436,13 +463,13 @@ value[I,Long]
 </div>
 
 <h3 id="abs-function">Abs function</h3>
-<p>The <code>abs</code> function takes an <em>Integer</em> or a
-<em>Float</em> value and returns its absolute value.</p>
 <pre>
     Float   abs(Float value)
     Integer abs(Integer value)
 </pre>
 
+<p>The <code>abs</code> function takes an <em>Integer</em> or a
+<em>Float</em> value and returns its absolute value.</p>
 <h3 id="ceil-and-floor-functions">Ceil and Floor functions</h3>
 <pre>
     Integer floor(Float value)
