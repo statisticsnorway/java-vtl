@@ -48,7 +48,7 @@ define(['angular',], function (angular) {
                         $http({
                             data: execution,
                             method: 'POST',
-                            url: 'http://localhost:8080/execute2'
+                            url: 'https://api.hadrien.io/vtl/execute2'
                         }).then(function successCallback(response) {
                             $scope.loading = false;
                             $scope.outputDatasets = response.data.datasets;
