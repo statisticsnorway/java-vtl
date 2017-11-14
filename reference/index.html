@@ -254,6 +254,15 @@
                 <li class="third-level"><a href="#date_from_string">date_from_string</a></li>
             
         
+            <li class="second-level"><a href="#operators-outside-the-specification">Operators outside the specification</a></li>
+            
+                <li class="third-level"><a href="#integer_from_string">integer_from_string</a></li>
+            
+                <li class="third-level"><a href="#float_from_string">float_from_string</a></li>
+            
+                <li class="third-level"><a href="#string_from_number">string_from_number</a></li>
+            
+        
     
     </ul>
 </div></div>
@@ -954,6 +963,91 @@ ID[I,String],M1[M,String]
 1 , 2016
 2 , 2017
 3 , null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div></p>
+<h2 id="operators-outside-the-specification">Operators outside the specification</h2>
+<h3 id="integer_from_string">integer_from_string</h3>
+<pre><code>Note 
+    This operator is not part of the VTL 1.1 specification.
+</code></pre>
+<pre>
+    Integer integer_from_string(String value)
+</pre>
+
+<p>The <code>integer_from_string</code> operator takes as input a <em>String</em> value and returns an <em>Integer</em> value.
+<div vtl-example>
+    <vtl-code>
+join := [data] {
+    integerFromString := integer_from_string(M1)
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+ID[I,String],M1[M,String]
+1 , 10
+2 , 101
+3 , null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div></p>
+<h3 id="float_from_string">float_from_string</h3>
+<pre><code>Note 
+    This operator is not part of the VTL 1.1 specification.
+</code></pre>
+<pre>
+    Float float_from_string(String value)
+</pre>
+
+<p>The <code>float_from_string</code> operator takes as input a <em>String</em> value and returns an <em>Float</em> value. The input
+value format is described in detail in section 3.10.2 of the Java Language Specification.
+Additionally a comma (<code>,</code>) is allowed as a decimal point.
+<div vtl-example>
+    <vtl-code>
+join := [data] {
+    floatFromString := float_from_string(M1)
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+ID[I,String],M1[M,String]
+1  , -0.1e-10
+2  , -0.1e10
+3  , -0.1e+10
+4  , 0.1e-10
+5  , 0.1e10
+6  , 0.1e+10
+7  , +0.1e-10
+8  , +0.1e10
+9  , +0.1e+10
+10 , 0.01
+11 , -0.001
+12 , +0.0001
+13 , null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div></p>
+<h3 id="string_from_number">string_from_number</h3>
+<pre><code>Note 
+    This operator is not part of the VTL 1.1 specification.
+</code></pre>
+<pre>
+    String string_from_number(Number value)
+</pre>
+
+<p>The <code>string_from_number</code> operator takes as input a <em>Number</em> value and returns an <em>String</em> value.
+The exact result of this operator is described in the documentation of <code>java.lang.Double.toString()</code>
+and <code>java.lang.Long.toString()</code> methods available at <a href="https://docs.oracle.com/en/java">Oracle Java Help Center</a>.
+<div vtl-example>
+    <vtl-code>
+join := [data] {
+    stringFromInteger := string_from_number(M1),
+    stringFromFloat := string_from_number(M2)
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+ID[I,String],M1[M,Long],M2[M,Double]
+1 , 10, 10.01
+2 , 0, -0.001
+3 , null, null
     </vtl-dataset>
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
 </div></p></div>

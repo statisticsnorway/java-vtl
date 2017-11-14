@@ -26,7 +26,7 @@ define(['angular'], function (angular) {
             };
 
             function createDataset(text, name) {
-                text = text.replace(/^[\r\n]+|\.|[\r\n]+$/g, ' ').trim(); // Remove tailing line bracks
+                text = text.replace(/^[\r\n]+|[\r\n]+$/g, ' ').trim(); // Remove tailing line breaks
                 var lines = text.split(/\r\n|\n/); // Split
                 var line, cells, cell, dataset;
                 if (lines < 1)
