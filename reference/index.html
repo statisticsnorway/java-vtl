@@ -238,6 +238,8 @@
             
                 <li class="third-level"><a href="#nvl">nvl</a></li>
             
+                <li class="third-level"><a href="#if-then-else">if-then-else</a></li>
+            
         
             <li class="second-level"><a href="#boolean-operators">Boolean operators</a></li>
             
@@ -680,6 +682,35 @@ id1[I,String],id2[I,String],value[M,String],attribute[A,String]
     </vtl-dataset>
     <vtl-data datasets="datasets" errors="errors"></vtl-data>
 </div></p>
+<h3 id="if-then-else">if-then-else</h3>
+<pre>
+    if ds_cond_1 then ds_1 { elseif ds_cond_2 then ds_2 }* else ds_3
+</pre>
+
+<p>The <code>if-then-else</code> operator returns the constant of the first evaluated true condition. </p>
+<p><code>ds_cond_1</code> is the first <em>Boolean</em> condition, <code>ds_cond_2</code> is an optional <em>Boolean</em> condition. </p>
+<p><code>ds_1</code> is a constant returned if <code>ds_cond_1</code> evaluated true. <code>ds_2</code> is a constant returned if <code>ds_cond_2</code> evaluated true.
+<code>ds_3</code> is a constant returned if <code>ds_cond_2</code> not evaluated true.</p>
+<p><code>ds_1</code>, <code>ds_2</code> and <code>ds_3</code> must have the same type.</p>
+<div vtl-example>
+    <vtl-code>
+result := [data] {
+    ifThenElseString := if M1 < 2 then "<2" elseif M1 < 3 then "<3" elseif M1 < 4 then "<4" else ">=4",
+    ifThenElseInteger := if M1 < 2 then 0 else 1,
+    ifThenElseFunctions := if M1 is not null then M1 * 2 else nvl(M1, 0) 
+}
+    </vtl-code>
+    <vtl-dataset name="data">
+ID[I,String],M1[M,Long]
+1 , 1
+2 , 2
+3 , 3
+4 , 4
+5 , null
+    </vtl-dataset>
+    <vtl-data datasets="datasets" errors="errors"></vtl-data>
+</div>
+
 <h2 id="boolean-operators">Boolean operators</h2>
 <h3 id="null-operators">Null operators</h3>
 <p>VTL adopts 3VL (three-value logic); null is not considered a "value",
