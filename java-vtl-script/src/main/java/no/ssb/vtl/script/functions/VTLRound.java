@@ -20,15 +20,14 @@ package no.ssb.vtl.script.functions;
  * =========================LICENSE_END==================================
  */
 
-import no.ssb.vtl.model.VTLFloat;
 import no.ssb.vtl.model.VTLNumber;
 import no.ssb.vtl.model.VTLObject;
 
 import java.math.BigDecimal;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 
-public class VTLRound extends AbstractVTLFunction<VTLFloat> {
+public class VTLRound extends AbstractVTLFunction<VTLNumber> {
 
     private static final String ARGUMENT_GREATER_THAT_ZERO = "%s must be greater than zero, was %s";
     private static final Argument<VTLNumber> DS = new Argument<>("ds", VTLNumber.class);
@@ -36,7 +35,7 @@ public class VTLRound extends AbstractVTLFunction<VTLFloat> {
     private static VTLRound instance;
 
     private VTLRound() {
-        super("round", VTLFloat.class, DS, DECIMALS);
+        super("round", VTLNumber.class, DS, DECIMALS);
     }
 
     public static VTLRound getInstance() {
@@ -47,7 +46,7 @@ public class VTLRound extends AbstractVTLFunction<VTLFloat> {
     }
 
     @Override
-    protected VTLFloat safeInvoke(TypeSafeArguments arguments) {
+    protected VTLNumber safeInvoke(TypeSafeArguments arguments) {
 
         VTLNumber ds = arguments.get(DS);
         VTLNumber decimals = arguments.get(DECIMALS);
@@ -63,7 +62,6 @@ public class VTLRound extends AbstractVTLFunction<VTLFloat> {
 
         BigDecimal bigDecimal = BigDecimal.valueOf(ds.get().doubleValue());
         BigDecimal rounded = bigDecimal.setScale(decimals.get().intValue(), BigDecimal.ROUND_HALF_UP);
-
-        return VTLObject.of(rounded.doubleValue());
+        return decimals.get().intValue() > 0 ? VTLObject.of(rounded.doubleValue()) : VTLObject.of(rounded.intValue());
     }
 }
