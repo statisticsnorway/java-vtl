@@ -31,7 +31,10 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.parser.VTLLexer;
 import no.ssb.vtl.parser.VTLParser;
 import no.ssb.vtl.script.error.ContextualRuntimeException;
+import no.ssb.vtl.script.functions.AggregationAvgFunction;
+import no.ssb.vtl.script.functions.AggregationSumFunction;
 import no.ssb.vtl.script.operations.AggregationOperation;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -48,22 +51,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 public class AggregationVisitorTest {
 
     private AggregationVisitor visitor;
     private Dataset datasetSingleMeasure;
     private Dataset datasetMultiMeasure;
+    private Dataset datasetMultiMeasureWithNullValues;
     private DataStructure dataStructureSingleMeasure;
 
     @Rule
     public JUnitSoftAssertions softly = new JUnitSoftAssertions();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
 
         SimpleBindings bindings = new SimpleBindings();
         visitor = new AggregationVisitor(
@@ -110,13 +112,34 @@ public class AggregationVisitorTest {
                 .addPoints("2012", "DK", 92L, 9L)
                 .build();
 
+
+
+        DataStructure dataStructureMultiMeasureWithNullValues = DataStructure.of(
+                "time", Component.Role.IDENTIFIER, String.class,
+                "geo", Component.Role.IDENTIFIER, String.class,
+                "m1", Component.Role.MEASURE, Long.class,
+                "m2", Component.Role.MEASURE, Long.class);
+
+        datasetMultiMeasureWithNullValues = StaticDataset.create(dataStructureMultiMeasureWithNullValues)
+                .addPoints("2010", "NO", 20L, 2L)
+                .addPoints("2010", "SE", 40L, 4L)
+                .addPoints("2010", "DK", null, 6L)
+                .addPoints("2011", "NO", 11L, 1L)
+                .addPoints("2011", "SE", 31L, 3L)
+                .addPoints("2011", "DK", 51L, 5L)
+                .addPoints("2012", "NO", 72L, 7L)
+                .addPoints("2012", "SE", null, 8L)
+                .addPoints("2012", "DK", null, 9L)
+                .build();
+
         bindings.put("dsMulti", datasetMultiMeasure);
+        bindings.put("dsMultiWithNulls", datasetMultiMeasureWithNullValues);
         bindings.put("dsSingle", datasetSingleMeasure);
 
     }
 
     @Test
-    public void variableDifferentDataset() throws Exception {
+    public void variableDifferentDataset() {
 
         List<String> expressions = Arrays.asList(
                 "sum(dsSingle) group by dsMulti.time",
@@ -131,7 +154,7 @@ public class AggregationVisitorTest {
     }
 
     @Test
-    public void variableNotFound() throws Exception {
+    public void variableNotFound() {
 
         List<String> expressions = Arrays.asList(
                 "sum(notFound) group by time",
@@ -154,11 +177,12 @@ public class AggregationVisitorTest {
     private VTLParser.AggregationFunctionContext parse(String expression) {
         VTLLexer lexer = new VTLLexer(CharStreams.fromString(expression));
         VTLParser parser = new VTLParser(new CommonTokenStream(lexer));
+        parser.setErrorHandler(new BailErrorStrategy());
         return parser.aggregationFunction();
     }
 
     @Test
-    public void testAggregateOnMeasure() throws Exception {
+    public void testAggregateOnMeasure() {
 
         List<String> expressions = Arrays.asList(
                 "sum(dsMulti) group by m2",
@@ -180,12 +204,12 @@ public class AggregationVisitorTest {
     }
 
     @Test
-    public void testMembership() throws Exception {
+    public void testMembership() {
 
         List<String> expressions = Arrays.asList(
+                "sum(dsSingle.m1) group by time",
                 "sum(dsSingle) group by time",
                 "sum(dsSingle) group by dsSingle.time",
-                "sum(dsSingle.m1) group by time",
                 "sum(dsSingle.m1) group by dsSingle.time",
                 "sum(dsSingle) along geo",
                 "sum(dsSingle) along dsSingle.geo",
@@ -219,11 +243,15 @@ public class AggregationVisitorTest {
     }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumSingleMeasureDataSet() throws Exception {
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumSingleMeasureDataSet() {
 
-        List<Component> components = Lists.newArrayList(datasetSingleMeasure.getDataStructure().getOrDefault("time", null));
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(datasetSingleMeasure,components);
+        List<Component> groupBy = Lists.newArrayList(datasetSingleMeasure.getDataStructure().getOrDefault("time", null));
+        List<Component> components = datasetSingleMeasure.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                datasetSingleMeasure,groupBy, components, new AggregationSumFunction());
         sumOperation.getData().forEach(System.out::println);
 
         DataStructure dataStructure = sumOperation.getDataStructure();
@@ -249,10 +277,14 @@ public class AggregationVisitorTest {
 
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumMultiMeasureDataSetAll() throws Exception {
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumMultiMeasureDataSetAll() {
         List<Component> groupBy = Lists.newArrayList(datasetMultiMeasure.getDataStructure().getOrDefault("time", null));
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(datasetMultiMeasure,groupBy);
+        List<Component> components = datasetMultiMeasure.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                datasetMultiMeasure, groupBy, components, new AggregationSumFunction());
 
         DataStructure dataStructure = sumOperation.getDataStructure();
 
@@ -276,14 +308,15 @@ public class AggregationVisitorTest {
     }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumMultiMeasureDataSet() throws Exception {
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumMultiMeasureDataSet() {
 
         DataStructure dataStructure = datasetMultiMeasure.getDataStructure();
         Component m1 = dataStructure.getOrDefault("m1", null);
         List<Component> groupBy = Lists.newArrayList(dataStructure.getOrDefault("time", null));
 
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(datasetMultiMeasure,groupBy, Collections.singletonList(m1));
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                datasetMultiMeasure, groupBy, Collections.singletonList(m1), new AggregationSumFunction());
 
         DataStructure resultingDataStructure = sumOperation.getDataStructure();
 
@@ -302,17 +335,115 @@ public class AggregationVisitorTest {
                 resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "m1", 11L+31L+51L)),
                 resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "m1", 72L+82L+92L))
         );
-
     }
 
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgMultiMeasureDataSet() {
+        DataStructure dataStructure = datasetMultiMeasure.getDataStructure();
+        Component m1 = dataStructure.getOrDefault("m1", null);
+        List<Component> groupBy = Lists.newArrayList(dataStructure.getOrDefault("time", null));
+
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                datasetMultiMeasure, groupBy, Collections.singletonList(m1), new AggregationAvgFunction());
+
+        DataStructure resultingDataStructure = avgOperation.getDataStructure();
+
+        assertThat(resultingDataStructure.getRoles()).contains(
+                entry("time", Component.Role.IDENTIFIER),
+                entry("m1", Component.Role.MEASURE)
+        );
+
+        assertThat(resultingDataStructure.getTypes()).contains(
+                entry("time", String.class),
+                entry("m1", Long.class)
+        );
+
+        assertThat(avgOperation.getData()).contains(
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2010", "m1", (20L+40L+60L)/3F)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "m1", (11L+31L+51L)/3F)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "m1", (72L+82L+92L)/3F))
+        );
+    }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumGroupedByMultipleIdentifiers() throws Exception {
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgMultiMeasureDataSetWithNullValues() {
+        DataStructure dataStructure = datasetMultiMeasureWithNullValues.getDataStructure();
+        Component m1 = dataStructure.getOrDefault("m1", null);
+        List<Component> groupBy = Lists.newArrayList(dataStructure.getOrDefault("time", null));
+
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                datasetMultiMeasureWithNullValues,groupBy, Collections.singletonList(m1), new AggregationAvgFunction());
+
+        DataStructure resultingDataStructure = avgOperation.getDataStructure();
+
+        assertThat(resultingDataStructure.getRoles()).contains(
+                entry("time", Component.Role.IDENTIFIER),
+                entry("m1", Component.Role.MEASURE)
+        );
+
+        assertThat(resultingDataStructure.getTypes()).contains(
+                entry("time", String.class),
+                entry("m1", Long.class)
+        );
+
+        assertThat(avgOperation.getData()).contains(
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2010", "m1", (20L+40L)/2F)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "m1", (11L+31L+51L)/3F)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "m1", (72L)/1F))
+        );
+    }
+
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgGroupedByMultipleIdentifiers() {
         DataStructure dataStructure = datasetSingleMeasure.getDataStructure();
-        List<Component> components = Lists.newArrayList(dataStructure.get("time"), dataStructure.get("geo"));
-        System.out.println("Group By " + components);
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(datasetSingleMeasure,components);
+        List<Component> groupBy = Lists.newArrayList(dataStructure.get("time"), dataStructure.get("geo"));
+        System.out.println("Group By " + groupBy);
+        List<Component> components = datasetSingleMeasure.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                datasetSingleMeasure, groupBy, components, new AggregationAvgFunction());
+        avgOperation.getData().forEach(System.out::println);
+
+        DataStructure resultingDataStructure = avgOperation.getDataStructure();
+
+        assertThat(resultingDataStructure.getRoles()).contains(
+                entry("time", Component.Role.IDENTIFIER),
+                entry("m1", Component.Role.MEASURE)
+        );
+
+        assertThat(resultingDataStructure.getTypes()).contains(
+                entry("time", String.class),
+                entry("m1", Long.class)
+        );
+
+        assertThat(avgOperation.getData()).contains(
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2010", "geo", "DK", "m1", 60D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2010", "geo", "NO", "m1", 20D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2010", "geo", "SE", "m1", 40D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "geo", "DK", "m1", 51D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "geo", "NO", "m1", 11D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2011", "geo", "SE", "m1", 31D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "geo", "DK", "m1", 92D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "geo", "NO", "m1", 72D)),
+                resultingDataStructure.wrap(ImmutableMap.of("time", "2012", "geo", "SE", "m1", 41D))
+        );
+    }
+
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumGroupedByMultipleIdentifiers() {
+        DataStructure dataStructure = datasetSingleMeasure.getDataStructure();
+        List<Component> groupBy = Lists.newArrayList(dataStructure.get("time"), dataStructure.get("geo"));
+        System.out.println("Group By " + groupBy);
+        List<Component> components = datasetSingleMeasure.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                datasetSingleMeasure, groupBy, components, new AggregationSumFunction());
         sumOperation.getData().forEach(System.out::println);
 
         DataStructure resultingDataStructure = sumOperation.getDataStructure();
@@ -340,11 +471,60 @@ public class AggregationVisitorTest {
         );
     }
 
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgAlongMultipleIdentifiers() {
+        Dataset datasetToBeAvged = createMultipleIdentifiersDataset();
+
+        DataStructure dataStructure = datasetToBeAvged.getDataStructure();
+
+        List<Component> alongComponents = Lists.newArrayList(dataStructure.get("enhet"), dataStructure.get("region"));
+        List<Component> groupBy = dataStructure.values()
+                .stream()
+                .filter(Component::isIdentifier)
+                .filter(component -> !alongComponents.contains(component))
+                .collect(Collectors.toList());
+        System.out.println(groupBy);
+        List<Component> components = datasetToBeAvged.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                datasetToBeAvged,
+                groupBy,
+                components,
+                new AggregationAvgFunction());
+
+        assertThat(avgOperation.getData()).containsOnly(dataPoint("EIER", "F130KFEIER", "130", "2015", "SBDR", (8418D+1092D+5367D+4370D+318D+610D+3888D+24D)/10));
+    }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumAlongMultipleIdentifiers() throws Exception {
-        Dataset datasetToBeSummed = StaticDataset.create()
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumAlongMultipleIdentifiers() {
+        Dataset datasetToBeSummed = createMultipleIdentifiersDataset();
+
+        DataStructure dataStructure = datasetToBeSummed.getDataStructure();
+
+        List<Component> alongComponents = Lists.newArrayList(dataStructure.get("enhet"), dataStructure.get("region"));
+        List<Component> groupBy = dataStructure.values()
+                .stream()
+                .filter(Component::isIdentifier)
+                .filter(component -> !alongComponents.contains(component))
+                .collect(Collectors.toList());
+        System.out.println(groupBy);
+        List<Component> components = datasetToBeSummed.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                datasetToBeSummed,
+                groupBy,
+                components,
+                new AggregationSumFunction());
+
+        assertThat(sumOperation.getData()).containsOnly(dataPoint("EIER", "F130KFEIER", "130", "2015", "SBDR", 8418L+1092L+5367L+4370L+318L+610L+3888L+24L));
+    }
+
+    private Dataset createMultipleIdentifiersDataset() {
+        return StaticDataset.create()
                 .addComponent("eieform", Component.Role.IDENTIFIER, String.class)
                 .addComponent("enhet", Component.Role.IDENTIFIER, String.class)
                 .addComponent("feltnavn", Component.Role.IDENTIFIER, String.class)
@@ -365,26 +545,44 @@ public class AggregationVisitorTest {
                 .addPoints("EIER", "987592567", "F130KFEIER", "130", "2015", "0301", "SBDR", 24L)
                 .addPoints("EIER", "983529968", "F130KFEIER", "130", "2015", "0417", "SBDR", 0L)
                 .build();
-
-        DataStructure dataStructure = datasetToBeSummed.getDataStructure();
-
-        List<Component> alongComponents = Lists.newArrayList(dataStructure.get("enhet"), dataStructure.get("region"));
-        List<Component> groupBy = dataStructure.values()
-                .stream()
-                .filter(Component::isIdentifier)
-                .filter(component -> !alongComponents.contains(component))
-                .collect(Collectors.toList());
-        System.out.println(groupBy);
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(datasetToBeSummed,groupBy);
-
-        assertThat(sumOperation.getData()).containsOnly(dataPoint("EIER", "F130KFEIER", "130", "2015", "SBDR", 8418L+1092L+5367L+4370L+318L+610L+3888L+24L));
-
     }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumWithNullValues() throws Exception {
-        Dataset dataset = StaticDataset.create(dataStructureSingleMeasure)
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgWithNullValues() {
+        Dataset dataset = createDatasetWithNullValues();
+
+        List<Component> components = dataStructureSingleMeasure.values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationAvgFunction());
+        assertThat(avgOperation.getData()).contains(dataPoint("2012", (41D + 92D)/2));
+    }
+
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumWithNullValues() {
+        Dataset dataset = createDatasetWithNullValues();
+
+        List<Component> components = dataStructureSingleMeasure.values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationSumFunction());
+        assertThat(sumOperation.getData()).contains(dataPoint("2012", 41L + 92L));
+    }
+
+    private Dataset createDatasetWithNullValues() {
+        return StaticDataset.create(dataStructureSingleMeasure)
                 .addPoints("2010", "NO", 20L)
                 .addPoints("2011", "SE", 31L)
                 .addPoints("2012", "SE", null)
@@ -396,20 +594,12 @@ public class AggregationVisitorTest {
                 .addPoints("2011", "DK", 51L)
                 .addPoints("2012", "DK", 92L)
                 .build();
-
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(dataset,
-                Collections.singletonList(dataStructureSingleMeasure.get("time")));
-        assertThat(sumOperation.getData()).contains(dataPoint("2012", 41L + 92L));
-
     }
 
     @Test(expected = ParseCancellationException.class)
-    // TODO: Move this to its own test when avg is implemented
+    // TODO: Move this to its own test when aggregation functions are improved
     // TODO: Use assertThrownBy with ContextualRuntimeException.
-    public void testAggregationWithoutNumber() throws Exception {
-        DataStructure dataStructure = DataStructure.builder()
-
-                .build();
+    public void testAggregationAvgWithoutNumber() {
         Dataset dataset = StaticDataset.create()
                 .addComponent("id1", Component.Role.IDENTIFIER, String.class)
                 .addComponent("m1", Component.Role.MEASURE, String.class)
@@ -417,18 +607,83 @@ public class AggregationVisitorTest {
                 .addPoints("2", "shouldFail")
                 .build();
 
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(dataset,
-                Collections.singletonList(dataStructureSingleMeasure.get("time")));
+        List<Component> components = dataset.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationAvgFunction());
+        avgOperation.getDataStructure();
+        fail("Expected an exception but none was thrown");
+    }
+
+    @Test(expected = ParseCancellationException.class)
+    // TODO: Move this to its own test when aggregation functions are improved
+    // TODO: Use assertThrownBy with ContextualRuntimeException.
+    public void testAggregationSumWithoutNumber() {
+        Dataset dataset = StaticDataset.create()
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("m1", Component.Role.MEASURE, String.class)
+                .addPoints("1", "notANumeric")
+                .addPoints("2", "shouldFail")
+                .build();
+
+        List<Component> components = dataset.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationSumFunction());
         sumOperation.getDataStructure();
         fail("Expected an exception but none was thrown");
     }
 
+    @Test
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testAvgWithEmptyAggregationGroup() {
+        //dataset with several null values. In fact ALL 2010 values are null
+        Dataset dataset = createDatasetWithSeveralNullValues();
+
+        List<Component> components = dataset.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation avgOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationAvgFunction());
+        assertThat(avgOperation.getData()).contains(dataPoint("2012", (41D + 92D)/2));
+        assertThat(avgOperation.getData()).contains(dataPoint("2010", null));
+    }
 
     @Test
-    // TODO: Move this to its own test when avg is implemented
-    public void testSumWithEmptyAggregationGroup() throws Exception {
+    // TODO: Move this to its own test when aggregation functions are improved
+    public void testSumWithEmptyAggregationGroup() {
         //dataset with several null values. In fact ALL 2010 values are null
-        Dataset dataset = StaticDataset.create(dataStructureSingleMeasure)
+        Dataset dataset = createDatasetWithSeveralNullValues();
+
+        List<Component> components = dataset.getDataStructure().values().stream()
+                .filter(Component::isMeasure)
+                .collect(Collectors.toList());
+
+        AggregationOperation sumOperation = AggregationVisitor.getAggregationOperation(
+                dataset,
+                Collections.singletonList(dataStructureSingleMeasure.get("time")),
+                components,
+                new AggregationSumFunction());
+        assertThat(sumOperation.getData()).contains(dataPoint("2012", 41L + 92L));
+        assertThat(sumOperation.getData()).contains(dataPoint("2010", null));
+    }
+
+    private Dataset createDatasetWithSeveralNullValues() {
+        return StaticDataset.create(dataStructureSingleMeasure)
                 .addPoints("2010", "NO", null)
                 .addPoints("2011", "SE", 31L)
                 .addPoints("2012", "SE", null)
@@ -440,11 +695,6 @@ public class AggregationVisitorTest {
                 .addPoints("2011", "DK", 51L)
                 .addPoints("2012", "DK", 92L)
                 .build();
-
-        AggregationOperation sumOperation = AggregationVisitor.getSumOperation(dataset,
-                Collections.singletonList(dataStructureSingleMeasure.get("time")));
-        assertThat(sumOperation.getData()).contains(dataPoint("2012", 41L + 92L));
-        assertThat(sumOperation.getData()).contains(dataPoint("2010", null));
     }
 
     private DataPoint dataPoint(Object... objects) {
