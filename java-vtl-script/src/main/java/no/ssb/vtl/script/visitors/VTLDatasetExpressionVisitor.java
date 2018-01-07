@@ -20,7 +20,7 @@ package no.ssb.vtl.script.visitors;
  * =========================LICENSE_END==================================
  */
 
-import no.ssb.vtl.model.AbstractDatasetOperation;
+import no.ssb.vtl.script.operations.AbstractDatasetOperation;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 
 public class VTLDatasetExpressionVisitor<T extends AbstractDatasetOperation> extends VTLBaseVisitor<T> {

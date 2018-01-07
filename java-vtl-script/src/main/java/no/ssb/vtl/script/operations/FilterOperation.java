@@ -20,7 +20,6 @@ package no.ssb.vtl.script.operations;
  * =========================LICENSE_END==================================
  */
 
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;

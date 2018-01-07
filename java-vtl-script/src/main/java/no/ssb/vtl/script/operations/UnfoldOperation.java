@@ -22,7 +22,6 @@ package no.ssb.vtl.script.operations;
 
 import com.codepoetics.protonpack.StreamUtils;
 import com.google.common.base.MoreObjects;
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Component.Role;
 import no.ssb.vtl.model.DataPoint;

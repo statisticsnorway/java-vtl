@@ -21,7 +21,6 @@ package no.ssb.vtl.script.operations;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;

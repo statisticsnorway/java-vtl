@@ -22,7 +22,7 @@ package no.ssb.vtl.script.operations.check;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
+import no.ssb.vtl.script.operations.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
