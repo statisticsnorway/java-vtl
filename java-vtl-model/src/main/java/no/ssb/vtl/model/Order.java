@@ -59,6 +59,26 @@ public final class Order extends ForwardingMap<Component, Order.Direction> imple
         this.structure = checkNotNull(structure);
     }
 
+    private Order.Direction inverse(Order.Direction direction) {
+        switch (direction) {
+            case ASC:
+                return DESC;
+            case DESC:
+                return ASC;
+            default:
+                throw new EnumConstantNotPresentException(Order.Direction.class, direction.name());
+        }
+    }
+
+    @Override
+    public Order reversed() {
+        Builder builder = Order.create(structure);
+        for (Entry<Component, Direction> entry : this.entrySet()) {
+            builder.put(entry.getKey(), inverse(entry.getValue()));
+        }
+        return builder.build();
+    }
+
     /**
      * Create a new Order.Builder instance.
      *
