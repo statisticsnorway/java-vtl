@@ -34,13 +34,13 @@ import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
-import no.ssb.vtl.script.operations.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLObject;
+import no.ssb.vtl.script.operations.AbstractUnaryDatasetOperation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -161,7 +161,7 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
 
                 Composition composition = checkNotNull(COMPOSITION_MAP.get(sign.get()), UNKNOWN_SIGN_VALUE, sign);
 
-                List<List<VTLObject>> paths = findPaths(graph, to, from);
+                List<List<VTLObject>> paths = findPaths(graph.asGraph(), to, from);
                 checkArgument(paths.isEmpty(), CIRCULAR_DEPENDENCY, from, composition, to, paths);
 
                 graph.putEdgeValue(from, to, composition);
@@ -202,7 +202,7 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
      * @return a list (possibly empty) of paths
      */
     @VisibleForTesting
-    static <T> List<List<T>> findPaths(Graph<T> graph, T from, T to) {
+    static <T,V> List<List<T>> findPaths(Graph<T> graph, T from, T to) {
         List<List<T>> paths = Lists.newArrayList();
         if (graph.nodes().contains(from) && graph.nodes().contains(to)) {
             // DAG means no loop.
@@ -311,7 +311,7 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
             // the sign of each datapoint (ie. a - (b - c + d) = a - b + c - d)
             for (VTLObject node : sorted) {
                 for (VTLObject successor : graph.successors(node)) {
-                    Composition sign = graph.edgeValue(node, successor);
+                    Composition sign = graph.edgeValue(node, successor).orElseThrow(RuntimeException::new);
                     for (ComposedDataPoint point : buckets.get(node)) {
                         if (Composition.COMPLEMENT.equals(sign)) {
                             // Invert if complement.
