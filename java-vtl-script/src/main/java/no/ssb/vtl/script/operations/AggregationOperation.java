@@ -21,7 +21,6 @@ package no.ssb.vtl.script.operations;
  */
 
 import com.codepoetics.protonpack.StreamUtils;
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
@@ -35,6 +34,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,6 +51,11 @@ public class AggregationOperation extends AbstractUnaryDatasetOperation {
         this.aggregationComponents = aggregationComponents;
         this.aggregationFunction = aggregationFunction;
         
+    }
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        return null;
     }
 
     @Override

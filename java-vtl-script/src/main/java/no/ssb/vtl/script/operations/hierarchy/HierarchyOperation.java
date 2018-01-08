@@ -265,9 +265,15 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
         return builder.build();
     }
 
+
     @Override
     protected DataStructure computeDataStructure() {
         return getChild().getDataStructure();
+    }
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
     @Override

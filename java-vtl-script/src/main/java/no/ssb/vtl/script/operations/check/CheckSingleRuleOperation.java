@@ -22,6 +22,7 @@ package no.ssb.vtl.script.operations.check;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.script.operations.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
@@ -70,6 +71,11 @@ public class CheckSingleRuleOperation extends AbstractUnaryDatasetOperation {
         int noIdentifiers = Maps.filterValues(dataset.getDataStructure().getRoles(), role -> role == Component.Role.IDENTIFIER)
                 .size();
         checkArgument(noIdentifiers > 0, "dataset does not have identifier components");
+    }
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        return null;
     }
 
     @Override

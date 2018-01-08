@@ -29,6 +29,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,11 @@ public class KeepOperation extends AbstractUnaryDatasetOperation {
         this.components = checkNotNull(names, "the component list was null");
 
         checkArgument(!names.isEmpty(), "the list of component to keep was null");
+    }
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
     /**

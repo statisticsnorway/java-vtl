@@ -128,6 +128,11 @@ public class UnfoldOperation extends AbstractUnaryDatasetOperation {
     }
 
     @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
+    }
+
+    @Override
     public DataStructure computeDataStructure() {
         Dataset dataset = getChild();
         DataStructure dataStructure = dataset.getDataStructure();

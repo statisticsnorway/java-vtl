@@ -46,10 +46,12 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -74,6 +76,11 @@ public class RenameOperation extends AbstractUnaryDatasetOperation {
         this.newRoles = newRoles;
     }
 
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
+    }
 
     @Override
     protected DataStructure computeDataStructure() {

@@ -60,7 +60,12 @@ public class UnionOperation extends AbstractDatasetOperation {
         while (iterator.hasNext())
             checkDataStructures(firstDataStructure, iterator.next().getDataStructure());
     }
-    
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
+    }
+
     @Override
     protected DataStructure computeDataStructure() {
         return getChildren().get(0).getDataStructure();
@@ -106,6 +111,7 @@ public class UnionOperation extends AbstractDatasetOperation {
             
     @Override
     public Stream<DataPoint> getData() {
+
         List<Dataset> datasets = getChildren();
         if (datasets.size() == 1) {
             return datasets.get(0).getData();

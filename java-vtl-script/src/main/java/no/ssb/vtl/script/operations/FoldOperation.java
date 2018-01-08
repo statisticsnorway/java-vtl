@@ -29,6 +29,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLObject;
 
 import java.util.List;
@@ -61,6 +62,11 @@ public class FoldOperation extends AbstractUnaryDatasetOperation {
                 "measureReference was empty");
         checkArgument(!(this.elements = checkNotNull(elements, "elements cannot be null")).isEmpty(),
                 "elements was empty");
+    }
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+        throw new UnsupportedOperationException("NOT IMPLEMENTED");
     }
 
     @Override

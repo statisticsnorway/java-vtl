@@ -255,8 +255,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     }
 
     @Override
-    public Optional<Stream<DataPoint>> getData(Order requestedOrder, Filtering filtering, Set<String> components) {
-
+    protected Optional<Stream<DataPoint>> computeData(Order requestedOrder, Filtering filtering, Set<String> components) {
         // Optimization.
         if (datasets.size() == 1) {
             Dataset dataset = datasets.values().iterator().next();

@@ -67,7 +67,7 @@ public class CrossJoinOperation extends OuterJoinOperation {
     }
 
     @Override
-    public Optional<Stream<DataPoint>> getData(Order requestedOrder, Filtering filtering, Set<String> components) {
+    protected Optional<Stream<DataPoint>> computeData(Order requestedOrder, Filtering filtering, Set<String> components) {
         Iterator<Dataset> iterator = getChildren().iterator();
 
         // Optimization

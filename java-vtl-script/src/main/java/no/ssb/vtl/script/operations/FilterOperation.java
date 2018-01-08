@@ -23,6 +23,7 @@ package no.ssb.vtl.script.operations;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLExpression;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
@@ -30,6 +31,7 @@ import no.ssb.vtl.script.operations.join.DataPointBindings;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -44,23 +46,36 @@ public class FilterOperation extends AbstractUnaryDatasetOperation {
         this.predicate = checkNotNull(predicate);
         this.componentBindings = checkNotNull(componentBindings);
     }
-    
-    protected DataStructure computeDataStructure() {
-        return getChild().getDataStructure();
+
+    @Override
+    protected Optional<Stream<DataPoint>> computeData(Order orders, Filtering filtering, Set<String> components) {
+
+        Optional<Stream<DataPoint>> data = getChild().getData(orders, filtering, components);
+        Stream<DataPoint> sortedStream = data.orElseGet(() -> {
+            // TODO: Limit and warn the user.
+            return getChild().getData().sorted(orders).filter(filtering);
+        });
+
+        DataPointBindings dataPointBindings = new DataPointBindings(componentBindings, getDataStructure());
+        return Optional.of(
+                sortedStream.map(dataPointBindings::setDataPoint).filter(bindings -> {
+                    VTLBoolean resolved = (VTLBoolean) predicate.resolve(dataPointBindings);
+                    Boolean predicate = resolved.get();
+                    return predicate == null ? false : predicate;
+                }).map(DataPointBindings::getDataPoint)
+        );
+
     }
 
     @Override
     public Stream<DataPoint> getData() {
-        DataPointBindings dataPointBindings = new DataPointBindings(componentBindings, getDataStructure());
-        return getChild().getData()
-                .map(dataPointBindings::setDataPoint)
-                .filter(bindings -> {
-                    VTLBoolean resolved = (VTLBoolean) predicate.resolve(dataPointBindings);
-                    Boolean predicate = resolved.get();
-                    return predicate == null ? false : predicate;
-                })
-                .map(DataPointBindings::getDataPoint);
+        return null;
     }
+
+    protected DataStructure computeDataStructure() {
+        return getChild().getDataStructure();
+    }
+
 
     @Override
     public Optional<Map<String, Integer>> getDistinctValuesCount() {
