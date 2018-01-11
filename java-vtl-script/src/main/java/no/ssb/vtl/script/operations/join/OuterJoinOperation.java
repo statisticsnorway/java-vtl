@@ -39,12 +39,13 @@ package no.ssb.vtl.script.operations.join;
  * #L%
  */
 
-import com.google.common.collect.Table;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.VTLObject;
 
 import java.util.Collections;
 import java.util.Map;
@@ -67,30 +68,37 @@ public class OuterJoinOperation extends AbstractJoinOperation {
             final Dataset leftDataset, final Dataset rightDataset
     ) {
 
-        final Table<Component, Dataset, Component> componentMapping = getComponentMapping();
-        final DataStructure structure = getDataStructure();
-        final DataStructure rightStructure = rightDataset.getDataStructure();
+        DataStructure structure = getDataStructure();
+        ImmutableList<Component> leftList = ImmutableList.copyOf(structure.values());
+
+        DataStructure rightStructure = rightDataset.getDataStructure();
+        ImmutableList<Component> rightList = ImmutableList.copyOf(rightStructure.values());
+
+        // Save the indexes of the right data point that need to be moved to the left.
+        final ImmutableMap<Integer, Integer> indexMap;
+
+        Map<Integer, Integer> indexMapBuilder = Maps.newHashMap();
+        for (int i = rightList.size() - 1; i >= 0; --i) {
+            Component rightComponent = rightList.get(i);
+            for (int j = leftList.size() - 1; j >= 0 ; --j) {
+                Component leftComponent = leftList.get(j);
+                if (rightComponent.equals(leftComponent)) {
+                    indexMapBuilder.putIfAbsent(i, j);
+                }
+            }
+        }
+        indexMap = ImmutableMap.copyOf(indexMapBuilder);
 
         return (left, right) -> {
 
             /*
              * We overwrite the ids if right != null for simplicity.
              */
-            DataPoint result;
-            if (left != null) {
-                result = DataPoint.create(left);
-            } else {
-                result = DataPoint.create(structure.size());
-            }
+            DataPoint result = left != null ? DataPoint.create(left) : DataPoint.create(structure.size());
 
             if (right != null) {
-                Map<Component, VTLObject> leftMap = structure.asMap(result);
-                Map<Component, VTLObject> rightMap = rightStructure.asMap(right);
-                for (Map.Entry<Component, Component> mapping : componentMapping.column(rightDataset).entrySet()) {
-                    Component to = mapping.getKey();
-                    Component from = mapping.getValue();
-                    leftMap.put(to, rightMap.get(from));
-                }
+                for (Map.Entry<Integer, Integer> entry : indexMap.entrySet())
+                    result.set(entry.getValue(), right.get(entry.getKey()));
             }
 
             return DataPoint.create(result);
