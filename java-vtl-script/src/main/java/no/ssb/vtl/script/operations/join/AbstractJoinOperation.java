@@ -84,7 +84,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
                 !namedDatasets.isEmpty(),
                 ERROR_EMPTY_DATASET_LIST
         );
-        this.datasets = ImmutableMap.copyOf(checkNotNull(Maps.transformValues(namedDatasets, DatasetDuplicate::new)));
+        this.datasets = ImmutableMap.copyOf(checkNotNull(namedDatasets));
 
         checkNotNull(identifiers);
 
