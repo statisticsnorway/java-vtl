@@ -22,7 +22,6 @@ package no.ssb.vtl.script.operations;
 
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLExpression;
@@ -30,14 +29,10 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import javax.script.Bindings;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.spy;
 
 public class FilterOperationTest {
 
@@ -82,47 +77,11 @@ public class FilterOperationTest {
 
     @Before
     public void setUp() throws Exception {
-        dataset = StaticDataset.create()
+        dataset= StaticDataset.create()
                 .addComponent("id", Component.Role.IDENTIFIER, String.class)
                 .addPoints("idValue")
                 .build();
         componentBindings = new ComponentBindings(dataset);
-    }
-
-    @Test
-    public void testOrder() {
-
-        Dataset dataset = spy(this.dataset);
-
-        ArgumentCaptor<Order> orderCapture = ArgumentCaptor.forClass(Order.class);
-        ArgumentCaptor<Dataset.Filtering> filterCapture = ArgumentCaptor.forClass(Dataset.Filtering.class);
-        ArgumentCaptor<Set> componentsCapture = ArgumentCaptor.forClass(Set.class);
-
-
-
-        doCallRealMethod().when(dataset).getData(
-                orderCapture.capture(),
-                filterCapture.capture(),
-                componentsCapture.capture()
-        );
-
-        FilterOperation resultBooleanNull = new FilterOperation(dataset, TRUE, componentBindings);
-
-        Order order = Order.createDefault(this.dataset.getDataStructure());
-        Dataset.Filtering filter = Dataset.Filtering.ALL;
-        Set<String> components = this.dataset.getDataStructure().keySet();
-
-        resultBooleanNull.getData(
-                order,
-                filter,
-                components
-        );
-
-        assertThat(orderCapture.getValue()).isSameAs(order);
-        assertThat(filterCapture.getValue()).isSameAs(filter);
-        assertThat(componentsCapture.getValue()).isSameAs(components);
-
-
     }
 
     @Test
