@@ -82,49 +82,6 @@ public class RenameOperationTest {
                 .build();
     }
 
-//    @Test(expected = IllegalArgumentException.class)
-//    public void testNotDuplicates() throws Exception {
-//        ImmutableMap<String, String> names = ImmutableMap.of("a1", "a2", "b1", "a2");
-//        try {
-//            new RenameOperation(notNullDataset, names, Collections.emptyMap());
-//        } catch (Throwable t) {
-//            assertThat(t).hasMessageContaining("a2");
-//            throw t;
-//        }
-//    }
-
-//    @Test(expected = IllegalArgumentException.class)
-//    public void testConsistentArguments() throws Exception {
-//        ImmutableMap<String, String> names = ImmutableMap.of("a1", "a2", "b1", "b2");
-//        ImmutableMap<String, Component.Role> roles;
-//        roles = ImmutableMap.of("nothere", Role.IDENTIFIER);
-//        try {
-//            new RenameOperation(notNullDataset, names, roles);
-//        } catch (Throwable t) {
-//            assertThat(t).hasMessageContaining("nothere");
-//            throw t;
-//        }
-//    }
-
-//    @Test()
-//    public void testKeyNotFound() throws Exception {
-//
-//        Dataset dataset = mock(Dataset.class);
-//        when(dataset.getDataStructure()).thenReturn(
-//                DataStructure.of((s, o) -> null, "notfound", Role.IDENTIFIER, String.class)
-//        );
-//
-//        Throwable ex = null;
-//        try {
-//            RenameOperation renameOperation = new RenameOperation(dataset, ImmutableMap.of("1a", "1b"), Collections.emptyMap());
-//            renameOperation.getDataStructure();
-//        } catch (Throwable t) {
-//            ex = t;
-//        }
-//        assertThat(ex).hasMessageContaining("1a");
-//
-//    }
-
     @Test
     public void testOrder() {
 
@@ -142,7 +99,7 @@ public class RenameOperationTest {
         );
 
         DataStructure structure = dataset.getDataStructure();
-        RenameOperation resultBooleanNull = new RenameOperation(
+        RenameOperation renameOperation = new RenameOperation(
                 dataset,
                 ImmutableMap.of(structure.get("m1"), "renamed")
         );
@@ -151,19 +108,26 @@ public class RenameOperationTest {
         Dataset.Filtering filter = Dataset.Filtering.ALL;
         Set<String> components = this.dataset.getDataStructure().keySet();
 
-        resultBooleanNull.getData(
+        renameOperation.getData(
                 order,
                 filter,
                 components
         );
 
-        assertThat(orderCapture.getValue()).isSameAs(order);
+        // Checks that the order uses the old name.
+        assertThat(orderCapture.getValue()).containsKeys(
+                structure.get("m1")
+        );
+        assertThat(orderCapture.getValue()).doesNotContainKeys(
+                renameOperation.getDataStructure().get("renamed")
+        );
+                
         assertThat(filterCapture.getValue()).isSameAs(filter);
         assertThat(componentsCapture.getValue()).isSameAs(components);
     }
 
     @Test
-    public void testRename() throws Exception {
+    public void testRename() {
 
         Dataset dataset = mock(Dataset.class);
 
