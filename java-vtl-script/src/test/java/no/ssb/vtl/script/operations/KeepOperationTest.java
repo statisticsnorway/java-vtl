@@ -38,7 +38,7 @@ public class KeepOperationTest {
     private Dataset dataset;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         dataset = StaticDataset.create()
                 .addComponent("id1", Component.Role.IDENTIFIER, String.class)
                 .addComponent("id2", Component.Role.IDENTIFIER, String.class)
