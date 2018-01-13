@@ -40,7 +40,7 @@ package no.ssb.vtl.script.operations.join;
  */
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
@@ -86,26 +86,20 @@ public class InnerJoinOperation extends AbstractJoinOperation {
         ImmutableList<Component> rightList = ImmutableList.copyOf(rightStructure.values());
 
         // Save the indexes of the right data point that need to be moved to the left.
-        final ImmutableListMultimap<Integer, Integer> indexMap;
-
-        ImmutableListMultimap.Builder<Integer, Integer> indexMapBuilder = ImmutableListMultimap.builder();
-        for (int i = 0; i < rightList.size(); i++) {
-            Component rightComponent = rightList.get(i);
-            for (int j = 0; j < leftList.size(); j++) {
-                Component leftComponent = leftList.get(j);
-                if (rightComponent.equals(leftComponent)) {
-                        indexMapBuilder.put(i, j);
-                }
-            }
+        ImmutableMap.Builder<Integer, Integer> indexMapBuilder = ImmutableMap.builder();
+        for (Map.Entry<Component, Component> entry : getComponentMapping().column(rightDataset).entrySet()) {
+            Component leftComponent = entry.getKey();
+            Component rightComponent = entry.getValue();
+            indexMapBuilder.put(rightList.indexOf(rightComponent), leftList.lastIndexOf(leftComponent));
         }
-        indexMap = indexMapBuilder.build();
+        final ImmutableMap<Integer, Integer> indexMap = indexMapBuilder.build();
 
         return (left, right) -> {
 
             if (left == null || right == null)
                 return null;
 
-            for (Map.Entry<Integer, Integer> entry : indexMap.entries())
+            for (Map.Entry<Integer, Integer> entry : indexMap.entrySet())
                 left.set(entry.getValue(), right.get(entry.getKey()));
 
             return DataPoint.create(left);

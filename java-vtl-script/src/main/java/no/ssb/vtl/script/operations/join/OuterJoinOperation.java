@@ -41,7 +41,6 @@ package no.ssb.vtl.script.operations.join;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
@@ -75,19 +74,13 @@ public class OuterJoinOperation extends AbstractJoinOperation {
         ImmutableList<Component> rightList = ImmutableList.copyOf(rightStructure.values());
 
         // Save the indexes of the right data point that need to be moved to the left.
-        final ImmutableMap<Integer, Integer> indexMap;
-
-        Map<Integer, Integer> indexMapBuilder = Maps.newHashMap();
-        for (int i = rightList.size() - 1; i >= 0; --i) {
-            Component rightComponent = rightList.get(i);
-            for (int j = leftList.size() - 1; j >= 0 ; --j) {
-                Component leftComponent = leftList.get(j);
-                if (rightComponent.equals(leftComponent)) {
-                    indexMapBuilder.putIfAbsent(i, j);
-                }
-            }
+        ImmutableMap.Builder<Integer, Integer> indexMapBuilder = ImmutableMap.builder();
+        for (Map.Entry<Component, Component> entry : getComponentMapping().column(rightDataset).entrySet()) {
+            Component leftComponent = entry.getKey();
+            Component rightComponent = entry.getValue();
+            indexMapBuilder.put(rightList.lastIndexOf(rightComponent), leftList.lastIndexOf(leftComponent));
         }
-        indexMap = ImmutableMap.copyOf(indexMapBuilder);
+        final Map<Integer, Integer> indexMap = indexMapBuilder.build();
 
         return (left, right) -> {
 
