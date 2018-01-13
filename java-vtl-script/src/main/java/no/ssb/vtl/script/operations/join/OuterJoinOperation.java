@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations.join;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,8 +39,8 @@ package no.ssb.vtl.script.operations.join;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Table;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
@@ -67,28 +67,27 @@ public class OuterJoinOperation extends AbstractJoinOperation {
             final Dataset leftDataset, final Dataset rightDataset
     ) {
 
-        DataStructure leftStructure = getDataStructure();
+        DataStructure structure = getDataStructure();
+        ImmutableList<Component> leftList = ImmutableList.copyOf(structure.values());
+
         DataStructure rightStructure = rightDataset.getDataStructure();
+        ImmutableList<Component> rightList = ImmutableList.copyOf(rightStructure.values());
 
         // Save the indexes of the right data point that need to be moved to the left.
-        final ImmutableMap<Integer, Integer> indexMap;
-
         ImmutableMap.Builder<Integer, Integer> indexMapBuilder = ImmutableMap.builder();
-        Table<Component, Dataset, Component> mapping = getComponentMapping();
-        Set<Map.Entry<Component, Component>> leftToRightComponentMapping = mapping.column(rightDataset).entrySet();
-        for (Map.Entry<Component, Component> entry : leftToRightComponentMapping) {
-            Component rightComponent = entry.getValue();
+        for (Map.Entry<Component, Component> entry : getComponentMapping().column(rightDataset).entrySet()) {
             Component leftComponent = entry.getKey();
-            indexMapBuilder.put(rightStructure.indexOf(rightComponent), leftStructure.indexOf(leftComponent));
+            Component rightComponent = entry.getValue();
+            indexMapBuilder.put(rightList.lastIndexOf(rightComponent), leftList.lastIndexOf(leftComponent));
         }
-        indexMap = indexMapBuilder.build();
+        final Map<Integer, Integer> indexMap = indexMapBuilder.build();
 
         return (left, right) -> {
 
             /*
              * We overwrite the ids if right != null for simplicity.
              */
-            DataPoint result = left != null ? DataPoint.create(left) : DataPoint.create(leftStructure.size());
+            DataPoint result = left != null ? DataPoint.create(left) : DataPoint.create(structure.size());
 
             if (right != null) {
                 for (Map.Entry<Integer, Integer> entry : indexMap.entrySet())
