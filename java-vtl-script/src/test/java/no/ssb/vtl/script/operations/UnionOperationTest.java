@@ -36,6 +36,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -321,6 +322,14 @@ public class UnionOperationTest {
         @Override
         public Optional<Long> getSize() {
             return Optional.of((long) data.size());
+        }
+
+        @Override
+        public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+            return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+                // TODO
+                return o;
+            }));
         }
 
         @Override

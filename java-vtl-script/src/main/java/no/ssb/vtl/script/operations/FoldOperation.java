@@ -30,6 +30,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLObject;
 
 import java.util.List;
@@ -159,6 +160,14 @@ public class FoldOperation extends AbstractUnaryDatasetOperation {
     @Override
     public Optional<Long> getSize() {
         return getChild().getSize().map(size -> size * elements.size());
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+            // TODO
+            return o;
+        }));
     }
 
     @Override

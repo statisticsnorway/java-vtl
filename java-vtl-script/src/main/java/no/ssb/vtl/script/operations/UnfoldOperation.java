@@ -129,6 +129,14 @@ public class UnfoldOperation extends AbstractUnaryDatasetOperation {
     }
 
     @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+            // TODO
+            return o;
+        }));
+    }
+
+    @Override
     public DataStructure computeDataStructure() {
         Dataset dataset = getChild();
         DataStructure dataStructure = dataset.getDataStructure();
