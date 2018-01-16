@@ -30,6 +30,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 
 import java.util.HashSet;
 import java.util.List;
@@ -80,24 +81,32 @@ public class KeepOperation extends AbstractUnaryDatasetOperation {
         return helper.omitNullValues().toString();
     }
 
-    @Override
-    public Stream<DataPoint> getData() {
-
+    private Stream<DataPoint> processStream(Stream<DataPoint> stream) {
         ImmutableList<Component> componentsToRemove = getComponentsToRemove();
 
         // Optimization.
         if (componentsToRemove.isEmpty())
-            return getChild().getData();
+            return stream;
 
         // Compute indexes to remove (in reverse order to avoid shifting).
         final ImmutableSet<Integer> indexes = computeIndexes(componentsToRemove);
 
-        return getChild().getData().peek(
+        return stream.peek(
                 dataPoints -> {
                     for (Integer index : indexes)
                         dataPoints.remove((int) index);
                 }
         );
+    }
+
+    @Override
+    public Stream<DataPoint> getData() {
+        return processStream(getChild().getData());
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return getChild().getData(orders, filtering, components).map(this::processStream);
     }
 
     /**

@@ -43,92 +43,87 @@ package no.ssb.vtl.script.operations;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import no.ssb.vtl.model.Component;
-import no.ssb.vtl.model.DataPoint;
-import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
+import no.ssb.vtl.model.StaticDataset;
+import no.ssb.vtl.model.VTLObject;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static no.ssb.vtl.model.Component.Role;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static no.ssb.vtl.model.Component.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class RenameOperationTest {
 
-    Dataset notNullDataset = new Dataset() {
-        @Override
-        public Stream<DataPoint> getData() {
-            return null;
-        }
+    Dataset dataset;
+    @Before
 
-        @Override
-        public Optional<Map<String, Integer>> getDistinctValuesCount() {
-            return null;
-        }
-
-        @Override
-        public Optional<Long> getSize() {
-            return null;
-        }
-
-        @Override
-        public DataStructure getDataStructure() {
-            return null;
-        }
-
-    };
-
-//    @Test(expected = IllegalArgumentException.class)
-//    public void testNotDuplicates() throws Exception {
-//        ImmutableMap<String, String> names = ImmutableMap.of("a1", "a2", "b1", "a2");
-//        try {
-//            new RenameOperation(notNullDataset, names, Collections.emptyMap());
-//        } catch (Throwable t) {
-//            assertThat(t).hasMessageContaining("a2");
-//            throw t;
-//        }
-//    }
-
-//    @Test(expected = IllegalArgumentException.class)
-//    public void testConsistentArguments() throws Exception {
-//        ImmutableMap<String, String> names = ImmutableMap.of("a1", "a2", "b1", "b2");
-//        ImmutableMap<String, Component.Role> roles;
-//        roles = ImmutableMap.of("nothere", Role.IDENTIFIER);
-//        try {
-//            new RenameOperation(notNullDataset, names, roles);
-//        } catch (Throwable t) {
-//            assertThat(t).hasMessageContaining("nothere");
-//            throw t;
-//        }
-//    }
-
-//    @Test()
-//    public void testKeyNotFound() throws Exception {
-//
-//        Dataset dataset = mock(Dataset.class);
-//        when(dataset.getDataStructure()).thenReturn(
-//                DataStructure.of((s, o) -> null, "notfound", Role.IDENTIFIER, String.class)
-//        );
-//
-//        Throwable ex = null;
-//        try {
-//            RenameOperation renameOperation = new RenameOperation(dataset, ImmutableMap.of("1a", "1b"), Collections.emptyMap());
-//            renameOperation.getDataStructure();
-//        } catch (Throwable t) {
-//            ex = t;
-//        }
-//        assertThat(ex).hasMessageContaining("1a");
-//
-//    }
+    public void setUp() {
+        dataset = StaticDataset.create()
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id2", Component.Role.IDENTIFIER, String.class)
+                .addComponent("m1", Component.Role.MEASURE, String.class)
+                .addComponent("m2", Component.Role.MEASURE, String.class)
+                .addPoints("id1-1", "id2-1", "m1-1", "m2-1")
+                .addPoints("id1-2", "id2-2", "m1-2", "m2-2")
+                .addPoints("id1-3", "id2-3", "m1-3", "m2-3")
+                .addPoints("id1-4", "id2-4", "m1-4", "m2-4")
+                .build();
+    }
 
     @Test
-    public void testRename() throws Exception {
+    public void testOrder() {
+
+        Dataset dataset = spy(this.dataset);
+
+        ArgumentCaptor<Order> orderCapture = ArgumentCaptor.forClass(Order.class);
+        ArgumentCaptor<Dataset.Filtering> filterCapture = ArgumentCaptor.forClass(Dataset.Filtering.class);
+        ArgumentCaptor<Set> componentsCapture = ArgumentCaptor.forClass(Set.class);
+
+
+        doCallRealMethod().when(dataset).getData(
+                orderCapture.capture(),
+                filterCapture.capture(),
+                componentsCapture.capture()
+        );
+
+        DataStructure structure = dataset.getDataStructure();
+        RenameOperation renameOperation = new RenameOperation(
+                dataset,
+                ImmutableMap.of(structure.get("m1"), "renamed")
+        );
+
+        Order order = Order.createDefault(this.dataset.getDataStructure());
+        Dataset.Filtering filter = Dataset.Filtering.ALL;
+        Set<String> components = this.dataset.getDataStructure().keySet();
+
+        renameOperation.getData(
+                order,
+                filter,
+                components
+        );
+
+        // Checks that the order uses the old name.
+        assertThat(orderCapture.getValue()).containsKeys(
+                structure.get("m1")
+        );
+        assertThat(orderCapture.getValue()).doesNotContainKeys(
+                renameOperation.getDataStructure().get("renamed")
+        );
+
+        assertThat(filterCapture.getValue()).isSameAs(filter);
+        assertThat(componentsCapture.getValue()).isSameAs(components);
+    }
+
+    @Test
+    public void testRename() {
 
         Dataset dataset = mock(Dataset.class);
 

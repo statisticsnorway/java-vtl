@@ -276,6 +276,14 @@ public class HierarchyOperationTest extends RandomizedTest {
             }
 
             @Override
+            public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+                return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+                    // TODO
+                    return o;
+                }));
+            }
+
+            @Override
             public DataStructure getDataStructure() {
                 return structure;
             }
@@ -300,6 +308,14 @@ public class HierarchyOperationTest extends RandomizedTest {
             @Override
             public Optional<Long> getSize() {
                 return Optional.empty();
+            }
+
+            @Override
+            public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+                return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+                    // TODO
+                    return o;
+                }));
             }
 
             @Override
@@ -352,6 +368,14 @@ public class HierarchyOperationTest extends RandomizedTest {
             @Override
             public Optional<Long> getSize() {
                 return Optional.empty();
+            }
+
+            @Override
+            public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+                return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+                    // TODO
+                    return o;
+                }));
             }
 
             @Override

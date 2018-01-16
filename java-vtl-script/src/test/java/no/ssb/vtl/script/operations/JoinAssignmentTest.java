@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLDate;
@@ -34,28 +35,32 @@ import no.ssb.vtl.model.VTLInteger;
 import no.ssb.vtl.model.VTLNumber;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.model.VTLString;
+import no.ssb.vtl.script.operations.join.ComponentBindings;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import javax.script.Bindings;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.spy;
 
 public class JoinAssignmentTest {
+    @Rule
+    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
     private VTLExpression expression;
     private Dataset dataset;
 
-    @Rule
-    public final JUnitSoftAssertions softly = new JUnitSoftAssertions();
-
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         expression = new VTLExpression() {
             @Override
             public VTLObject resolve(Bindings bindings) {
@@ -85,6 +90,47 @@ public class JoinAssignmentTest {
     }
 
     @Test
+    public void testOrder() {
+
+        Dataset dataset = spy(this.dataset);
+
+        ArgumentCaptor<Order> orderCapture = ArgumentCaptor.forClass(Order.class);
+        ArgumentCaptor<Dataset.Filtering> filterCapture = ArgumentCaptor.forClass(Dataset.Filtering.class);
+        ArgumentCaptor<Set> componentsCapture = ArgumentCaptor.forClass(Set.class);
+
+
+        doCallRealMethod().when(dataset).getData(
+                orderCapture.capture(),
+                filterCapture.capture(),
+                componentsCapture.capture()
+        );
+
+        JoinAssignment resultBooleanNull = new JoinAssignment(
+                dataset,
+                expression,
+                "test",
+                Component.Role.MEASURE,
+                false,
+                new ComponentBindings(dataset)
+        );
+
+        Order order = Order.createDefault(this.dataset.getDataStructure());
+        Dataset.Filtering filter = Dataset.Filtering.ALL;
+        Set<String> components = this.dataset.getDataStructure().keySet();
+
+        resultBooleanNull.getData(
+                order,
+                filter,
+                components
+        );
+
+        assertThat(orderCapture.getValue()).isSameAs(order);
+        assertThat(filterCapture.getValue()).isSameAs(filter);
+        assertThat(componentsCapture.getValue()).isSameAs(components);
+
+    }
+
+    @Test
     public void testTypeConversion() throws Exception {
         ImmutableMap<Class<? extends VTLObject>, Class<?>> types = ImmutableMap.<Class<? extends VTLObject>, Class<?>>builder()
                 .put(VTLNumber.class, Number.class)
@@ -102,10 +148,11 @@ public class JoinAssignmentTest {
         }
     }
 
-    // Replacing identifier is not allowed.
     @Test
     public void testIdentifierFails() throws Exception {
-
+        /*
+         * Replacing identifier is not allowed.
+         */
         List<JoinAssignment> operations = Lists.newArrayList(
                 new JoinAssignment(dataset, expression, "id", Component.Role.IDENTIFIER, true),
                 new JoinAssignment(dataset, expression, "id", Component.Role.ATTRIBUTE, true),

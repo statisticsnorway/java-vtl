@@ -396,6 +396,14 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
         return Optional.empty();
     }
 
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+            // TODO
+            return o;
+        }));
+    }
+
     static private class ComposedDataPoint extends DataPoint {
         private final Composition sign;
 

@@ -1,6 +1,6 @@
 package no.ssb.vtl.script.operations;
 
-/*-
+/*
  * ========================LICENSE_START=================================
  * Java VTL
  * %%
@@ -9,9 +9,7 @@ package no.ssb.vtl.script.operations;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,73 +18,37 @@ package no.ssb.vtl.script.operations;
  * =========================LICENSE_END==================================
  */
 
+import com.google.common.collect.Sets;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
-import no.ssb.vtl.model.VTLBoolean;
-import no.ssb.vtl.model.VTLExpression;
-import no.ssb.vtl.model.VTLObject;
-import no.ssb.vtl.script.operations.join.ComponentBindings;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import javax.script.Bindings;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
 
-public class FilterOperationTest {
+public class KeepOperationTest {
 
     private Dataset dataset;
-    private ComponentBindings componentBindings;
-
-    private static VTLExpression NULL = new VTLExpression() {
-        @Override
-        public VTLObject resolve(Bindings bindings) {
-            return VTLBoolean.of((Boolean) null);
-        }
-
-        @Override
-        public Class getVTLType() {
-            return VTLBoolean.class;
-        }
-    };
-
-    private static VTLExpression FALSE = new VTLExpression() {
-        @Override
-        public VTLObject resolve(Bindings bindings) {
-            return VTLBoolean.of(false);
-        }
-
-        @Override
-        public Class getVTLType() {
-            return VTLBoolean.class;
-        }
-    };
-
-    private static VTLExpression TRUE = new VTLExpression() {
-        @Override
-        public VTLObject resolve(Bindings bindings) {
-            return VTLBoolean.of(true);
-        }
-
-        @Override
-        public Class getVTLType() {
-            return VTLBoolean.class;
-        }
-    };
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         dataset = StaticDataset.create()
-                .addComponent("id", Component.Role.IDENTIFIER, String.class)
-                .addPoints("idValue")
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id2", Component.Role.IDENTIFIER, String.class)
+                .addComponent("m1", Component.Role.MEASURE, String.class)
+                .addComponent("m2", Component.Role.MEASURE, String.class)
+                .addPoints("id1-1", "id2-1", "m1-1", "m2-1")
+                .addPoints("id1-2", "id2-2", "m1-2", "m2-2")
+                .addPoints("id1-3", "id2-3", "m1-3", "m2-3")
+                .addPoints("id1-4", "id2-4", "m1-4", "m2-4")
                 .build();
-        componentBindings = new ComponentBindings(dataset);
     }
 
     @Test
@@ -99,14 +61,16 @@ public class FilterOperationTest {
         ArgumentCaptor<Set> componentsCapture = ArgumentCaptor.forClass(Set.class);
 
 
-
         doCallRealMethod().when(dataset).getData(
                 orderCapture.capture(),
                 filterCapture.capture(),
                 componentsCapture.capture()
         );
 
-        FilterOperation resultBooleanNull = new FilterOperation(dataset, TRUE, componentBindings);
+        KeepOperation resultBooleanNull = new KeepOperation(
+                dataset,
+                Sets.newHashSet(this.dataset.getDataStructure().get("m1"))
+        );
 
         Order order = Order.createDefault(this.dataset.getDataStructure());
         Dataset.Filtering filter = Dataset.Filtering.ALL;
@@ -124,27 +88,4 @@ public class FilterOperationTest {
 
 
     }
-
-    @Test
-    public void testPredicateReturnsNull() throws Exception {
-
-        FilterOperation resultBooleanNull = new FilterOperation(dataset, NULL, componentBindings);
-        assertThat(resultBooleanNull.getData()).isEmpty();
-    }
-
-    @Test
-    public void testPredicateReturnsFalse() throws Exception {
-
-        FilterOperation result = new FilterOperation(dataset, FALSE, componentBindings);
-        assertThat(result.getData()).isEmpty();
-    }
-
-
-    @Test
-    public void testPredicateReturnsTrue() throws Exception {
-
-        FilterOperation result = new FilterOperation(dataset, TRUE, componentBindings);
-        assertThat(result.getData()).isNotEmpty();
-    }
 }
-
