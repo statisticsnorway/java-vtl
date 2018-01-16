@@ -121,7 +121,7 @@ public class RenameOperationTest {
         assertThat(orderCapture.getValue()).doesNotContainKeys(
                 renameOperation.getDataStructure().get("renamed")
         );
-                
+
         assertThat(filterCapture.getValue()).isSameAs(filter);
         assertThat(componentsCapture.getValue()).isSameAs(components);
     }
