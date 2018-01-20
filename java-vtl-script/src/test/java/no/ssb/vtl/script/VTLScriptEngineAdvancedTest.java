@@ -94,4 +94,55 @@ public class VTLScriptEngineAdvancedTest {
                 );
     }
 
+    @Test
+    public void testSumAlongThenUnion() throws Exception {
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id2", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id3", Component.Role.IDENTIFIER, String.class)
+                .addComponent("m1", Component.Role.MEASURE, Long.class)
+
+                .addPoints("2016", "A", "001", 1L)
+                .addPoints("2016", "A", "002", 2L)
+                .build();
+
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id2", Component.Role.IDENTIFIER, String.class)
+                .addComponent("m1", Component.Role.MEASURE, Long.class)
+
+                .addPoints("2016", "B", 4L)
+                .build();
+
+
+        bindings.put("ds1", ds1);
+        bindings.put("ds2", ds2);
+
+        engine.eval("" +
+                "ds3 := sum(ds1) along id3 " +
+                "ds4 := union(ds2, ds3)"
+        );
+
+
+        assertThat(bindings).containsKey("ds4");
+        assertThat(bindings.get("ds4")).isInstanceOf(Dataset.class);
+
+        Dataset ds4 = (Dataset) bindings.get("ds4");
+        assertThat(ds4.getDataStructure())
+                .describedAs("data structure of d4")
+                .containsOnlyKeys(
+                        "id1",
+                        "id2",
+                        "m1"
+                );
+
+        assertThat(ds4.getData())
+                .flatExtracting(input -> input)
+                .extracting(VTLObject::get)
+                .containsExactly(
+                        "2016", "A", 3L,
+                        "2016", "B", 4L
+                );
+    }
+
 }

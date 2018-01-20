@@ -127,7 +127,7 @@ public class UnionOperation extends AbstractDatasetOperation {
             streams.add(stream.get());
         }
 
-        Comparator<DataPoint> comparator = Comparator.nullsLast(orders);
+        Comparator<DataPoint> comparator = Comparator.nullsLast(Order.createDefault(getDataStructure()));
         Stream<DataPoint> result = StreamUtils.interleave(createSelector2(comparator), streams);
         return Optional.of(result);
     }
@@ -252,7 +252,7 @@ public class UnionOperation extends AbstractDatasetOperation {
         String rowAsString = row.keySet().stream()
                 .map(k -> k.getRole() + ":" + row.get(k))
                 .collect(Collectors.joining("\n"));
-        throw new VTLRuntimeException(String.format("The resulting dataset from a union contains duplicates. Duplicate row: %s", rowAsString), "VTL-1xxx", o);
+        throw new VTLRuntimeException(String.format("The resulting dataset from a union contains duplicates. Duplicate row:\n%s", rowAsString), "VTL-1xxx", o);
     }
 
     private Map<Component, Order.Direction> rolesInOrder(DataStructure dataStructure, Order.Direction desc, Component.Role... roles) {
