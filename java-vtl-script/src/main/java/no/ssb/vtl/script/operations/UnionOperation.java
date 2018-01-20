@@ -36,15 +36,13 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.error.VTLRuntimeException;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,33 +111,37 @@ public class UnionOperation extends AbstractDatasetOperation {
     }
 
     @Override
-    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+    public Optional<Stream<DataPoint>> getData(Order order, Filtering filtering, Set<String> components) {
 
         List<Dataset> datasets = getChildren();
         if (datasets.size() == 1)
-            return datasets.get(0).getData(orders, filtering, components);
+            return datasets.get(0).getData(order, filtering, components);
 
         List<Stream<DataPoint>> streams = Lists.newArrayList();
         for (Dataset dataset : getChildren()) {
-            Order adjustedOrders = createAdjustedOrders(orders, dataset.getDataStructure());
+            Order adjustedOrders = createAdjustedOrders(order, dataset.getDataStructure());
             Optional<Stream<DataPoint>> stream = dataset.getData(adjustedOrders, filtering, components);
             if (!stream.isPresent()) return Optional.empty();
             streams.add(stream.get());
         }
 
-        Comparator<DataPoint> comparator = Comparator.nullsLast(Order.createDefault(getDataStructure()));
+        Comparator<DataPoint> comparator = Comparator.nullsLast(createAdjustedOrders(order, getDataStructure()));
         Stream<DataPoint> result = StreamUtils.interleave(createSelector2(comparator), streams);
         return Optional.of(result);
     }
 
-    private Order createAdjustedOrders(Order orders, DataStructure dataStructure) {
+    private Order createAdjustedOrders(Order orders, DataStructure childStructure) {
 
-        Order.Builder adjustedOrders = Order.create(dataStructure);
-        Collection<Component> values = dataStructure.values();
-        Queue<Component> componentQueue = new LinkedList<>(values);
+        DataStructure ownStructure = getDataStructure();
+        Order.Builder adjustedOrders = Order.create(childStructure);
 
-        for (Component component : orders.keySet()) {
-            adjustedOrders.put(componentQueue.remove(), orders.get(component));
+        HashMap<String, Order.Direction> namedOrder = Maps.newHashMap();
+        for (Map.Entry<Component, Order.Direction> directionEntry : orders.entrySet()) {
+            namedOrder.put(ownStructure.getName(directionEntry.getKey()), directionEntry.getValue());
+        }
+
+        for (String columnName : ownStructure.keySet()) {
+            adjustedOrders.put(columnName, namedOrder.getOrDefault(columnName, Order.Direction.ASC));
         }
 
         return adjustedOrders.build();
