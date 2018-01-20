@@ -126,7 +126,7 @@ public class UnionOperation extends AbstractDatasetOperation {
         }
 
         Comparator<DataPoint> comparator = Comparator.nullsLast(createAdjustedOrders(order, getDataStructure()));
-        Stream<DataPoint> result = StreamUtils.interleave(createSelector2(comparator), streams);
+        Stream<DataPoint> result = StreamUtils.interleave(createSelector(comparator), streams);
         return Optional.of(result);
     }
 
@@ -147,7 +147,7 @@ public class UnionOperation extends AbstractDatasetOperation {
         return adjustedOrders.build();
     }
 
-    private <T> Selector<T> createSelector2(Comparator<T> comparator) {
+    private <T> Selector<T> createSelector(Comparator<T> comparator) {
         return new Selector<T>() {
 
             private T lastMin = null;
@@ -174,54 +174,6 @@ public class UnionOperation extends AbstractDatasetOperation {
                     lastMin = minVal;
                 }
                 return idx;
-            }
-        };
-    }
-
-    // TODO: Create PR for https://github.com/poetix/protonpack/issues/43
-    private <T> Selector<T> createSelector(Comparator<T> comparator) {
-        return new Selector<T>() {
-
-            private T lastMin = null;
-
-            private boolean isBeforeLast(T dataPoint) {
-                if (lastMin == null)
-                    return false;
-
-                int beforeLast = comparator.compare(dataPoint, lastMin);
-                if (beforeLast == 0) {
-                    throwDuplicateError((DataPoint) dataPoint);
-                    return false;
-                } else {
-                    return beforeLast < 0;
-                }
-            }
-
-
-            @Override
-            public Integer apply(T[] dataPoints) {
-                // Advance the stream that is the most behind.
-                T minBeforeLast = null;
-                T minGlobal = null;
-                int mblIdx = -1;
-                int mgIdx = -1;
-                for (int i = 0; i < dataPoints.length; i++) {
-
-                    T dataPoint = dataPoints[i];
-                    if (isBeforeLast(dataPoint)) {
-
-                        if (comparator.compare(dataPoint, minBeforeLast) < 0) {
-                            mblIdx = i;
-                            minBeforeLast = dataPoint;
-                        }
-
-                    }
-                    if ((minGlobal == null && dataPoint != null) || comparator.compare(dataPoint, minGlobal) < 0) {
-                        mgIdx = i;
-                        minGlobal = dataPoint;
-                    }
-                }
-                return mblIdx < 0 ? mgIdx : mblIdx;
             }
         };
     }
