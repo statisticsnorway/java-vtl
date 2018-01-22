@@ -119,29 +119,32 @@ public class UnionOperation extends AbstractDatasetOperation {
 
         List<Stream<DataPoint>> streams = Lists.newArrayList();
         for (Dataset dataset : getChildren()) {
-            Order adjustedOrders = createAdjustedOrders(order, dataset.getDataStructure());
+            Order adjustedOrders = createAdjustedOrder(order, dataset.getDataStructure());
             Optional<Stream<DataPoint>> stream = dataset.getData(adjustedOrders, filtering, components);
             if (!stream.isPresent()) return Optional.empty();
             streams.add(stream.get());
         }
 
-        Comparator<DataPoint> comparator = Comparator.nullsLast(createAdjustedOrders(order, getDataStructure()));
+        Comparator<DataPoint> comparator = Comparator.nullsLast(createAdjustedOrder(order, getDataStructure()));
         Stream<DataPoint> result = StreamUtils.interleave(createSelector(comparator), streams);
         return Optional.of(result);
     }
 
-    private Order createAdjustedOrders(Order orders, DataStructure childStructure) {
+    private Order createAdjustedOrder(Order order, DataStructure structure) {
 
-        DataStructure ownStructure = getDataStructure();
-        Order.Builder adjustedOrders = Order.create(childStructure);
+        DataStructure unionStructure = getDataStructure();
+        Order.Builder adjustedOrders = Order.create(structure);
 
-        HashMap<String, Order.Direction> namedOrder = Maps.newHashMap();
-        for (Map.Entry<Component, Order.Direction> directionEntry : orders.entrySet()) {
-            namedOrder.put(ownStructure.getName(directionEntry.getKey()), directionEntry.getValue());
+        HashMap<String, Order.Direction> nameToDirection = Maps.newHashMap();
+        for (Map.Entry<Component, Order.Direction> orderEntry : order.entrySet()) {
+            Component orderComponent = orderEntry.getKey();
+            Order.Direction orderDirection = orderEntry.getValue();
+            String columnName = unionStructure.getName(orderComponent);
+            nameToDirection.put(columnName, orderDirection);
         }
 
-        for (String columnName : ownStructure.keySet()) {
-            adjustedOrders.put(columnName, namedOrder.getOrDefault(columnName, Order.Direction.ASC));
+        for (String columnName : unionStructure.keySet()) {
+            adjustedOrders.put(columnName, nameToDirection.getOrDefault(columnName, Order.Direction.ASC));
         }
 
         return adjustedOrders.build();
