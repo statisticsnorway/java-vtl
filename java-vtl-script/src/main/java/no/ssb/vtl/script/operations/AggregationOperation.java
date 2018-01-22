@@ -76,35 +76,52 @@ public class AggregationOperation extends AbstractUnaryDatasetOperation {
     @Override
     public Stream<DataPoint> getData() {
         DataStructure childStructure = getChild().getDataStructure();
+
+        Order.Builder orderBuilder = Order.create(childStructure);
+        groupBy.forEach(component -> orderBuilder.put(component, Order.Direction.ASC));
+        Order orderForSorting = orderBuilder.build();
+
+        Stream<DataPoint> data = getChild().getData(orderForSorting)
+                .orElseGet(() -> getChild().getData().sorted(orderForSorting));
+
+        return this.processStream(data);
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return getChild().getData(orders, filtering, components).map(this::processStream);
+    }
+
+    private Stream<DataPoint> processStream(Stream<DataPoint> data) {
+        DataStructure childStructure = getChild().getDataStructure();
         DataStructure structure = getDataStructure();
-    
-        Order.Builder builder = Order.create(childStructure);
-        groupBy.forEach(component -> builder.put(component, Order.Direction.ASC));
-        Order order = builder.build();
-    
-        Stream<DataPoint> data = getChild().getData(order).orElseGet(() -> getChild().getData().sorted(order));
+
+        Order.Builder orderBuilder = Order.create(childStructure);
+        groupBy.forEach(component -> orderBuilder.put(component, Order.Direction.ASC));
+        Order orderForGrouping = orderBuilder.build();
+
         Stream<List<DataPoint>> groupedDataPoints = StreamUtils.aggregate(data,
-                (dataPoint1, dataPoint2) -> order.compare(dataPoint1, dataPoint2) == 0)
+                (dataPoint1, dataPoint2) -> orderForGrouping.compare(dataPoint1, dataPoint2) == 0)
                 .onClose(data::close);
-    
+
         @SuppressWarnings("UnnecessaryLocalVariable")
         Stream<DataPoint> aggregatedDataPoints = groupedDataPoints.map(dataPoints -> {
             DataPoint firstDataPointOfGroup = DataPoint.create(dataPoints.get(0));
             Map<Component, VTLObject> resultAsMap = childStructure.asMap(firstDataPointOfGroup);
-    
+
             for (Component aggregationComponent : aggregationComponents) {
-    
+
                 List<VTLNumber> aggregationValues = (List) dataPoints.stream()
                         .map(dataPoint -> childStructure.asMap(dataPoint).get(aggregationComponent))
                         .filter(vtlObject -> !VTLObject.NULL.equals(vtlObject))
                         .map(vtlObject -> VTLObject.of(vtlObject.get()))
                         .collect(Collectors.toList());
-    
+
                 resultAsMap.put(aggregationComponent, aggregationFunction.apply(aggregationValues));
             }
             return structure.fromMap(resultAsMap);
         });
-        
+
         return aggregatedDataPoints;
     }
 
@@ -125,11 +142,4 @@ public class AggregationOperation extends AbstractUnaryDatasetOperation {
         return Optional.empty();
     }
 
-    @Override
-    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
-        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
-            // TODO
-            return o;
-        }));
-    }
 }

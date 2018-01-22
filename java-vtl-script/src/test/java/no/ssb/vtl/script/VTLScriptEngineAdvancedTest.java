@@ -24,6 +24,7 @@ package no.ssb.vtl.script;
 import no.ssb.vtl.connectors.Connector;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLObject;
 import org.junit.Test;
@@ -85,6 +86,12 @@ public class VTLScriptEngineAdvancedTest {
                         "m1"
                 );
 
+        //check if Order is passed correctly
+        Order.Builder order = Order.create(ds4.getDataStructure())
+                .put("id1", Order.Direction.ASC)
+                .put("id2", Order.Direction.DESC);
+        assertThat(ds4.getData(order.build()).get()).isSortedAccordingTo(order.build());
+
         assertThat(ds4.getData())
                 .flatExtracting(input -> input)
                 .extracting(VTLObject::get)
@@ -135,6 +142,12 @@ public class VTLScriptEngineAdvancedTest {
                         "id2",
                         "m1"
                 );
+
+        //check if Order is passed correctly
+        Order.Builder order = Order.create(ds4.getDataStructure())
+                .put("id1", Order.Direction.ASC)
+                .put("id2", Order.Direction.DESC);
+        assertThat(ds4.getData(order.build()).get()).isSortedAccordingTo(order.build());
 
         assertThat(ds4.getData())
                 .flatExtracting(input -> input)
