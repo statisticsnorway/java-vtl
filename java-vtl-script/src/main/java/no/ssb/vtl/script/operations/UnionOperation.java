@@ -36,15 +36,13 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.error.VTLRuntimeException;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,39 +111,43 @@ public class UnionOperation extends AbstractDatasetOperation {
     }
 
     @Override
-    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+    public Optional<Stream<DataPoint>> getData(Order order, Filtering filtering, Set<String> components) {
 
         List<Dataset> datasets = getChildren();
         if (datasets.size() == 1)
-            return datasets.get(0).getData(orders, filtering, components);
+            return datasets.get(0).getData(order, filtering, components);
 
         List<Stream<DataPoint>> streams = Lists.newArrayList();
         for (Dataset dataset : getChildren()) {
-            Order adjustedOrders = createAdjustedOrders(orders, dataset.getDataStructure());
+            Order adjustedOrders = createAdjustedOrders(order, dataset.getDataStructure());
             Optional<Stream<DataPoint>> stream = dataset.getData(adjustedOrders, filtering, components);
             if (!stream.isPresent()) return Optional.empty();
             streams.add(stream.get());
         }
 
-        Comparator<DataPoint> comparator = Comparator.nullsLast(orders);
-        Stream<DataPoint> result = StreamUtils.interleave(createSelector2(comparator), streams);
+        Comparator<DataPoint> comparator = Comparator.nullsLast(createAdjustedOrders(order, getDataStructure()));
+        Stream<DataPoint> result = StreamUtils.interleave(createSelector(comparator), streams);
         return Optional.of(result);
     }
 
-    private Order createAdjustedOrders(Order orders, DataStructure dataStructure) {
+    private Order createAdjustedOrders(Order orders, DataStructure childStructure) {
 
-        Order.Builder adjustedOrders = Order.create(dataStructure);
-        Collection<Component> values = dataStructure.values();
-        Queue<Component> componentQueue = new LinkedList<>(values);
+        DataStructure ownStructure = getDataStructure();
+        Order.Builder adjustedOrders = Order.create(childStructure);
 
-        for (Component component : orders.keySet()) {
-            adjustedOrders.put(componentQueue.remove(), orders.get(component));
+        HashMap<String, Order.Direction> namedOrder = Maps.newHashMap();
+        for (Map.Entry<Component, Order.Direction> directionEntry : orders.entrySet()) {
+            namedOrder.put(ownStructure.getName(directionEntry.getKey()), directionEntry.getValue());
+        }
+
+        for (String columnName : ownStructure.keySet()) {
+            adjustedOrders.put(columnName, namedOrder.getOrDefault(columnName, Order.Direction.ASC));
         }
 
         return adjustedOrders.build();
     }
 
-    private <T> Selector<T> createSelector2(Comparator<T> comparator) {
+    private <T> Selector<T> createSelector(Comparator<T> comparator) {
         return new Selector<T>() {
 
             private T lastMin = null;
@@ -172,54 +174,6 @@ public class UnionOperation extends AbstractDatasetOperation {
                     lastMin = minVal;
                 }
                 return idx;
-            }
-        };
-    }
-
-    // TODO: Create PR for https://github.com/poetix/protonpack/issues/43
-    private <T> Selector<T> createSelector(Comparator<T> comparator) {
-        return new Selector<T>() {
-
-            private T lastMin = null;
-
-            private boolean isBeforeLast(T dataPoint) {
-                if (lastMin == null)
-                    return false;
-
-                int beforeLast = comparator.compare(dataPoint, lastMin);
-                if (beforeLast == 0) {
-                    throwDuplicateError((DataPoint) dataPoint);
-                    return false;
-                } else {
-                    return beforeLast < 0;
-                }
-            }
-
-
-            @Override
-            public Integer apply(T[] dataPoints) {
-                // Advance the stream that is the most behind.
-                T minBeforeLast = null;
-                T minGlobal = null;
-                int mblIdx = -1;
-                int mgIdx = -1;
-                for (int i = 0; i < dataPoints.length; i++) {
-
-                    T dataPoint = dataPoints[i];
-                    if (isBeforeLast(dataPoint)) {
-
-                        if (comparator.compare(dataPoint, minBeforeLast) < 0) {
-                            mblIdx = i;
-                            minBeforeLast = dataPoint;
-                        }
-
-                    }
-                    if ((minGlobal == null && dataPoint != null) || comparator.compare(dataPoint, minGlobal) < 0) {
-                        mgIdx = i;
-                        minGlobal = dataPoint;
-                    }
-                }
-                return mblIdx < 0 ? mgIdx : mblIdx;
             }
         };
     }
@@ -252,7 +206,7 @@ public class UnionOperation extends AbstractDatasetOperation {
         String rowAsString = row.keySet().stream()
                 .map(k -> k.getRole() + ":" + row.get(k))
                 .collect(Collectors.joining("\n"));
-        throw new VTLRuntimeException(String.format("The resulting dataset from a union contains duplicates. Duplicate row: %s", rowAsString), "VTL-1xxx", o);
+        throw new VTLRuntimeException(String.format("The resulting dataset from a union contains duplicates. Duplicate row:\n%s", rowAsString), "VTL-1xxx", o);
     }
 
     private Map<Component, Order.Direction> rolesInOrder(DataStructure dataStructure, Order.Direction desc, Component.Role... roles) {
