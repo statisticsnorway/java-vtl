@@ -26,7 +26,6 @@ package no.ssb.vtl.script.functions;
 
 import no.ssb.vtl.model.VTLFloat;
 import no.ssb.vtl.model.VTLNumber;
-import no.ssb.vtl.model.VTLObject;
 
 import java.util.List;
 import java.util.Objects;
