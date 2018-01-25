@@ -125,12 +125,7 @@ public interface Dataset {
      * @param filtering the filtering on the {@link Component}s of the {@link DataPoint}s
      * @return a <b>sorted</b> stream of {@link DataPoint}s if sorting is supported.
      */
-    default Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
-        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
-            // TODO
-            return o;
-        }));
-    }
+    Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components);
 
     /**
      * Creates a new independent, immutable stream of DataPoints.

@@ -87,6 +87,14 @@ public class StaticDataset implements Dataset {
     }
 
     @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+            // TODO
+            return o;
+        }));
+    }
+
+    @Override
     public DataStructure getDataStructure() {
         return structure;
     }

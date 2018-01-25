@@ -26,6 +26,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLDate;
 import no.ssb.vtl.model.VTLExpression;
@@ -40,6 +41,7 @@ import no.ssb.vtl.script.operations.join.DataPointBindings;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -134,6 +136,15 @@ public class JoinAssignment extends AbstractUnaryDatasetOperation {
 
     @Override
     public Stream<DataPoint> getData() {
+        return this.processStream(getChild().getData());
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return getChild().getData(orders, filtering, components).map(this::processStream);
+    }
+
+    private Stream<DataPoint> processStream(Stream<DataPoint> stream) {
         DataStructure childDataStructure = getChild().getDataStructure();
 
         DataStructure dataStructure = getDataStructure();
@@ -141,8 +152,7 @@ public class JoinAssignment extends AbstractUnaryDatasetOperation {
 
         DataPointBindings dataPointBindings = new DataPointBindings(componentBindings, childDataStructure);
 
-        Stream<DataPoint> data = getChild().getData();
-        return data.peek(datapoint -> {
+        return stream.peek(datapoint -> {
 
             if (childDataStructure.size() < dataStructure.size())
                 datapoint.add(VTLObject.NULL);

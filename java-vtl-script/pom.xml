@@ -50,15 +50,15 @@
         </dependency>
 
         <dependency>
-            <groupId>com.carrotsearch.randomizedtesting</groupId>
-            <artifactId>randomizedtesting-runner</artifactId>
+            <groupId>org.brotli</groupId>
+            <artifactId>dec</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.brotli</groupId>
-            <artifactId>dec</artifactId>
-            <scope>test</scope>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>4.0.0</version>
         </dependency>
     </dependencies>
 

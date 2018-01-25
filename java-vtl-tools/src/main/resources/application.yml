@@ -1,0 +1,2 @@
+#Set as appropriate on your instance. Left blank will disable the px-api connector
+pxApi.baseUrl: #http://data.ssb.no/api/v0/no/table/

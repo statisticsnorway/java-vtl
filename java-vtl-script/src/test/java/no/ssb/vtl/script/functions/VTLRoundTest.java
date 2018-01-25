@@ -26,8 +26,7 @@ import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 public class VTLRoundTest extends AbstractVTLNumberBinaryFunctionTest {
 
@@ -100,7 +99,7 @@ public class VTLRoundTest extends AbstractVTLNumberBinaryFunctionTest {
     }
 
     @Test
-    public void testInvokeWithNegativeDecimalNumber() throws Exception {
+    public void testInvokeWithNegativeDecimalNumber() {
         assertThatThrownBy(() -> vtlBinaryFunction.invoke(
                 Lists.newArrayList(
                         VTLNumber.of(3.444445),
@@ -110,5 +109,18 @@ public class VTLRoundTest extends AbstractVTLNumberBinaryFunctionTest {
                 .as("exception when passing a negative number where a positive value is expected")
                 .hasMessage("Argument{name=decimals, type=VTLNumber} must be greater than zero, was -5")
                 .isExactlyInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void testInvokeWithZeroDecimals() {
+        VTLObject<?> result = vtlBinaryFunction.invoke(
+                Lists.newArrayList(
+                        VTLNumber.of(10.1234),
+                        VTLNumber.of(0)
+                )
+        );
+
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(VTLNumber.of(10));
     }
 }

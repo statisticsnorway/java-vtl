@@ -19,6 +19,7 @@ package no.ssb.vtl.script.error;
  */
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 
 import javax.script.ScriptException;
 import java.util.Optional;
@@ -72,7 +73,12 @@ public class VTLScriptException extends ScriptException implements PositionableE
         startColumn = ctx.getStart().getCharPositionInLine();
         if (ctx.getStop() != null) {
             stopLine = ctx.getStop().getLine();
-            stopColumn = ctx.getStop().getCharPositionInLine();
+            if (ctx.getStart() == ctx.getStop()) {
+                Token token = ctx.getStart();
+                stopColumn = startColumn + token.getText().length();
+            } else {
+                stopColumn = ctx.getStop().getCharPositionInLine();
+            }
         }
     }
 

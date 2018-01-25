@@ -34,8 +34,7 @@ import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class AbstractArithmeticExpressionTest {
 
@@ -43,6 +42,7 @@ public class AbstractArithmeticExpressionTest {
     public JUnitSoftAssertions softly = new JUnitSoftAssertions();
     private VTLExpression floatExpr;
     private VTLExpression integerExpr;
+    private VTLExpression numberExpr;
 
     private static VTLExpression createExpression(Class<? extends VTLObject> type, VTLObject value) {
         return new VTLExpression() {
@@ -59,16 +59,19 @@ public class AbstractArithmeticExpressionTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         integerExpr = mock(VTLExpression.class);
         when(integerExpr.getVTLType()).thenReturn(VTLInteger.class);
 
         floatExpr = mock(VTLExpression.class);
         when(floatExpr.getVTLType()).thenReturn(VTLFloat.class);
+
+        numberExpr = mock(VTLExpression.class);
+        when(numberExpr.getVTLType()).thenReturn(VTLNumber.class);
     }
 
     @Test
-    public void testFailsFast() throws Exception {
+    public void testFailsFast() {
         VTLExpression mock = mock(VTLExpression.class);
 
         softly.assertThatThrownBy(() -> new TestableExpression(null, null))
@@ -85,7 +88,7 @@ public class AbstractArithmeticExpressionTest {
     }
 
     @Test
-    public void testTypes() throws Exception {
+    public void testTypes() {
         softly.assertThat(new TestableExpression(integerExpr, integerExpr).getVTLType())
                 .as("type returned by abstract arithmetic expression")
                 .isAssignableFrom(VTLInteger.class);
@@ -94,6 +97,10 @@ public class AbstractArithmeticExpressionTest {
                 .as("type returned by abstract arithmetic expression with float operand")
                 .isAssignableFrom(VTLFloat.class);
 
+        softly.assertThat(new TestableExpression(numberExpr, integerExpr).getVTLType())
+                .as("type returned by abstract arithmetic expression with float operand")
+                .isAssignableFrom(VTLNumber.class);
+
         softly.assertThat(new TestableExpression(integerExpr, floatExpr).getVTLType())
                 .as("type returned by abstract arithmetic expression with float operand")
                 .isAssignableFrom(VTLFloat.class);
@@ -101,16 +108,37 @@ public class AbstractArithmeticExpressionTest {
         softly.assertThat(new TestableExpression(floatExpr, floatExpr).getVTLType())
                 .as("type returned by abstract arithmetic expression with float operand")
                 .isAssignableFrom(VTLFloat.class);
+
+        softly.assertThat(new TestableExpression(numberExpr, floatExpr).getVTLType())
+                .as("type returned by abstract arithmetic expression with float operand")
+                .isAssignableFrom(VTLNumber.class);
+
+        softly.assertThat(new TestableExpression(integerExpr, numberExpr).getVTLType())
+                .as("type returned by abstract arithmetic expression with float operand")
+                .isAssignableFrom(VTLNumber.class);
+
+        softly.assertThat(new TestableExpression(floatExpr, numberExpr).getVTLType())
+                .as("type returned by abstract arithmetic expression with float operand")
+                .isAssignableFrom(VTLNumber.class);
+
+        softly.assertThat(new TestableExpression(numberExpr, numberExpr).getVTLType())
+                .as("type returned by abstract arithmetic expression with float operand")
+                .isAssignableFrom(VTLNumber.class);
     }
 
     @Test
-    public void testNulls() throws Exception {
+    public void testNulls() {
 
         List<Class<? extends VTLObject>> expressionTypes = Arrays.asList(
                 VTLInteger.class, VTLInteger.class,
                 VTLFloat.class, VTLInteger.class,
+                VTLNumber.class, VTLInteger.class,
                 VTLInteger.class, VTLFloat.class,
-                VTLFloat.class, VTLFloat.class
+                VTLFloat.class, VTLFloat.class,
+                VTLNumber.class, VTLFloat.class,
+                VTLInteger.class, VTLNumber.class,
+                VTLFloat.class, VTLNumber.class,
+                VTLNumber.class, VTLNumber.class
         );
 
         List<VTLObject> expressionValues = Arrays.asList(

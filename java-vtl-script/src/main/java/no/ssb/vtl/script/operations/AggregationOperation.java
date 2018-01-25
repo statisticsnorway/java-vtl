@@ -35,6 +35,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -122,5 +123,13 @@ public class AggregationOperation extends AbstractUnaryDatasetOperation {
     @Override
     public Optional<Long> getSize() {
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
+            // TODO
+            return o;
+        }));
     }
 }

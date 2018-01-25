@@ -32,6 +32,9 @@ public class ResultRepresentation {
 
     @JsonProperty
     private List<DatasetRepresentation> datasets = Lists.newArrayList();
+    
+    @JsonProperty
+    private DatasetRepresentation resultDataset;
 
     public List<DatasetRepresentation> getDatasets() {
         return datasets;
@@ -41,4 +44,11 @@ public class ResultRepresentation {
         this.datasets = datasets;
     }
 
+    public DatasetRepresentation getResultDataset() {
+        return resultDataset;
+    }
+
+    public void setResultDataset(DatasetRepresentation resultDataset) {
+        this.resultDataset = resultDataset;
+    }
 }

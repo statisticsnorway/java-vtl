@@ -323,7 +323,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     @Override
     public Stream<DataPoint> getData() {
         Order order = createDefaultOrder(getDataStructure(), getCommonIdentifiers());
-        return getData(order, null, null)
+        return getData(order)
                 .orElseThrow(() -> new RuntimeException("could not sort data"));
     }
 

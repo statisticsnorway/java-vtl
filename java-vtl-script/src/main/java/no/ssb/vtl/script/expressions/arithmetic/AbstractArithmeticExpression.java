@@ -36,10 +36,17 @@ public abstract class AbstractArithmeticExpression extends AbstractNullFirstExpr
 
     @Override
     public Class getVTLType() {
-        if (getLeftOperand().getVTLType() == VTLFloat.class || getRightOperand().getVTLType() == VTLFloat.class)
+        if (hasOperandOfType(VTLNumber.class)) {
+            return VTLNumber.class;
+        }
+        else if (hasOperandOfType(VTLFloat.class))
             return VTLFloat.class;
         else
             return VTLInteger.class;
+    }
+
+    private boolean hasOperandOfType(Class clazz) {
+        return getLeftOperand().getVTLType() == clazz || getRightOperand().getVTLType() == clazz;
     }
 
     @Override

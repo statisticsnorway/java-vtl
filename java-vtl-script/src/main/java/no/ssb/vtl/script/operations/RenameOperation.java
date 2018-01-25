@@ -40,20 +40,23 @@ package no.ssb.vtl.script.operations;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableBiMap;
 import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Order;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 /**
  * Rename operation.
@@ -62,7 +65,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class RenameOperation extends AbstractUnaryDatasetOperation {
 
-    private final Map<Component, String> newNames;
+    private final ImmutableBiMap<Component, String> newNames;
     private final Map<Component, Component.Role> newRoles;
 
     public RenameOperation(Dataset dataset, Map<Component, String> newNames) {
@@ -71,20 +74,18 @@ public class RenameOperation extends AbstractUnaryDatasetOperation {
 
     public RenameOperation(Dataset dataset, Map<Component, String> newNames, Map<Component, Component.Role> newRoles) {
         super(checkNotNull(dataset));
-        this.newNames = newNames;
+        this.newNames = ImmutableBiMap.copyOf(newNames);
         this.newRoles = newRoles;
     }
 
 
     @Override
     protected DataStructure computeDataStructure() {
-        Map<Component, String> map = Maps.newHashMap();
         DataStructure.Builder newDataStructure = DataStructure.builder();
         for (Map.Entry<String, Component> componentEntry : getChild().getDataStructure().entrySet()) {
             Component component = componentEntry.getValue();
             if (newNames.containsKey(component)) {
                 String newName = newNames.get(component);
-                map.put(component, newName);
                 newDataStructure.put(
                         newName,
                         newRoles.getOrDefault(component, component.getRole()),
@@ -110,6 +111,32 @@ public class RenameOperation extends AbstractUnaryDatasetOperation {
     @Override
     public Stream<DataPoint> getData() {
         return getChild().getData();
+    }
+
+    @VisibleForTesting
+    Order copyOrder(Order order) {
+        // Use the old names.
+        DataStructure childStructure = getChild().getDataStructure();
+        DataStructure structure = getDataStructure();
+
+        Order.Builder orderBuilder = Order.create(childStructure);
+        for (Map.Entry<Component, Order.Direction> direction : order.entrySet()) {
+            String name = structure.getName(direction.getKey());
+            if (newNames.inverse().containsKey(name)) {
+                orderBuilder.put(
+                        newNames.inverse().get(name),
+                        direction.getValue()
+                );
+            } else {
+                orderBuilder.put(direction);
+            }
+        }
+        return orderBuilder.build();
+    }
+
+    @Override
+    public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+        return getChild().getData(copyOrder(orders), filtering, components);
     }
 
     @Override

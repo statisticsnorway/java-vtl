@@ -79,13 +79,16 @@ public class ExecutorController {
             String name = dataset.getName();
             bindings.put(name, DatasetRepresentation.convertToDataset(dataset));
         }
-        vtlEngine.eval(execution.getExpression(), bindings);
+        Object eval = vtlEngine.eval(execution.getExpression(), bindings);
+        Dataset finalResult = (Dataset) eval;
 
         ResultRepresentation datasets = new ResultRepresentation();
         for (Map.Entry<String, Object> entry : bindings.entrySet()) {
-            datasets.getDatasets().add(
-                    DatasetRepresentation.create(entry.getKey(), (Dataset) entry.getValue())
-            );
+            Dataset dataset = (Dataset) entry.getValue();
+            if (dataset.equals(finalResult)) {
+                datasets.setResultDataset(DatasetRepresentation.create(entry.getKey(), finalResult));
+            }
+            datasets.getDatasets().add(DatasetRepresentation.create(entry.getKey(), dataset));
         }
         return datasets;
     }

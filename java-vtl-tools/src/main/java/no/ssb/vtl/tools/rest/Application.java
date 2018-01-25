@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import no.ssb.vtl.connectors.Connector;
+import no.ssb.vtl.connectors.PxApiConnector;
 import no.ssb.vtl.connectors.SsbApiConnector;
 import no.ssb.vtl.connectors.SsbKlassApiConnector;
 import no.ssb.vtl.connectors.spring.RestTemplateConnector;
@@ -37,6 +38,7 @@ import no.ssb.vtl.connectors.utils.CachedConnector;
 import no.ssb.vtl.connectors.utils.RegexConnector;
 import no.ssb.vtl.connectors.utils.TimeoutConnector;
 import no.ssb.vtl.script.VTLScriptEngine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -47,6 +49,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -73,6 +76,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 @EnableCaching
 public class Application {
 
+    @Value("${pxApi.baseUrl}")
+    private String pxApiBaseUrl;
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
@@ -89,6 +95,9 @@ public class Application {
         connectors.add(new SsbApiConnector(new ObjectMapper()));
         connectors.add(new SsbKlassApiConnector(new ObjectMapper(), SsbKlassApiConnector.PeriodType.YEAR));
         connectors.add(getKompisConnector(mapper));
+        if (!StringUtils.isEmpty(pxApiBaseUrl)) {
+            connectors.add(new PxApiConnector(pxApiBaseUrl));
+        }
 
         // Setup timeout.
         connectors = Lists.transform(connectors, c -> TimeoutConnector.create(c, 100, TimeUnit.SECONDS));
