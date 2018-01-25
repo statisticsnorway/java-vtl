@@ -27,6 +27,7 @@ import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.VTLBoolean;
 import no.ssb.vtl.model.VTLExpression;
+import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
 import no.ssb.vtl.script.operations.join.DataPointBindings;
 
@@ -66,9 +67,8 @@ public class FilterOperation extends AbstractUnaryDatasetOperation {
         DataPointBindings dataPointBindings = new DataPointBindings(componentBindings, getDataStructure());
         return stream.map(dataPointBindings::setDataPoint)
                 .filter(bindings -> {
-                    VTLBoolean resolved = (VTLBoolean) predicate.resolve(dataPointBindings);
-                    Boolean predicate = resolved.get();
-                    return predicate == null ? false : predicate;
+                    VTLObject resolved = predicate.resolve(dataPointBindings);
+                    return resolved.get() == null ? false : VTLBoolean.of((Boolean) resolved.get()).get();
                 })
                 .map(DataPointBindings::getDataPoint);
     }
