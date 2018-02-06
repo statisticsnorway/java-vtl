@@ -7,7 +7,7 @@
     <parent>
         <groupId>no.ssb.vtl</groupId>
         <artifactId>java-vtl-parent</artifactId>
-        <version>0.1.4-SNAPSHOT</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>java-vtl-model</artifactId>
