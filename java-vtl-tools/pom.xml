@@ -22,19 +22,19 @@
         <dependency>
             <groupId>no.ssb.vtl.connectors</groupId>
             <artifactId>ssb-connector</artifactId>
-            <version>0.1.6-SNAPSHOT</version>
+            <version>0.1.7-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>no.ssb.vtl.connectors</groupId>
             <artifactId>spring-connector</artifactId>
-            <version>0.1.6-SNAPSHOT</version>
+            <version>0.1.7-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>no.ssb.vtl.connectors</groupId>
             <artifactId>utils</artifactId>
-            <version>0.1.6-SNAPSHOT</version>
+            <version>0.1.7-SNAPSHOT</version>
         </dependency>
 
         <dependency>
