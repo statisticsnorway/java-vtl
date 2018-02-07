@@ -26,9 +26,10 @@ import com.google.common.collect.Sets;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLNumber;
-import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.parser.VTLParser.AggregationParamsContext;
 import no.ssb.vtl.script.error.ContextualRuntimeException;
+import no.ssb.vtl.script.functions.AggregationSumFunction;
+import no.ssb.vtl.script.functions.AggregationAvgFunction;
 import no.ssb.vtl.script.operations.AggregationOperation;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
 import org.antlr.v4.runtime.Token;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -44,9 +46,11 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static no.ssb.vtl.parser.VTLParser.ALONG;
 import static no.ssb.vtl.parser.VTLParser.AggregateSumContext;
+import static no.ssb.vtl.parser.VTLParser.AggregateAvgContext;
 import static no.ssb.vtl.parser.VTLParser.GROUP_BY;
 import static no.ssb.vtl.parser.VTLParser.VariableContext;
 import static no.ssb.vtl.parser.VTLParser.VariableExpressionContext;
+import static no.ssb.vtl.parser.VTLParser.AggregationFunctionContext;
 
 public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationOperation> {
 
@@ -92,17 +96,12 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
     }
 
     @VisibleForTesting
-    static AggregationOperation getSumOperation(Dataset dataset, List<Component> groupBy) {
-        List<Component> component = dataset.getDataStructure().values().stream()
-                .filter(Component::isMeasure)
-                .collect(Collectors.toList());
-        return getSumOperation(dataset, groupBy, component);
-    }
-
-    @VisibleForTesting
-    static AggregationOperation getSumOperation(Dataset dataset, List<Component> groupBy, List<Component> aggregationComponents) {
-        return new AggregationOperation(dataset, groupBy, aggregationComponents,
-                vtlNumbers -> vtlNumbers.stream().reduce(VTLNumber::add).orElse(VTLObject.of((Double) null)));
+    static AggregationOperation getAggregationOperation(
+            Dataset dataset,
+            List<Component> groupBy,
+            List<Component> aggregationComponents,
+            Function<List<VTLNumber>, VTLNumber> aggregationFunction) {
+        return new AggregationOperation(dataset, groupBy, aggregationComponents, aggregationFunction);
     }
 
     private static void checkComponentType(VariableExpressionContext parameterVariableContext, VariableContext variableContext, Component identifier) {
@@ -132,11 +131,44 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
         }
     }
 
-    @Override
+        @Override
     public AggregationOperation visitAggregateSum(AggregateSumContext ctx) {
+        return getAggregationOperation(ctx, "sum");
+    }
 
+        @Override
+    public AggregationOperation visitAggregateAvg(AggregateAvgContext ctx) {
+        return getAggregationOperation(ctx, "avg");
+    }
+
+
+
+    private AggregationOperation getAggregationOperation(AggregationFunctionContext ctx, String type) {
+
+        VariableExpressionContext variableExpressionContext;
+        AggregationParamsContext paramContexts;
+        Function<List<VTLNumber>, VTLNumber> aggregationFunction;
+
+        switch (type) {
+            case "sum":
+            {
+                variableExpressionContext = ((AggregateSumContext) ctx).variableExpression();
+                paramContexts = ((AggregateSumContext)ctx).aggregationParams();
+                aggregationFunction = new AggregationSumFunction();
+                break;
+            }
+            case "avg":
+            {
+                variableExpressionContext = ((AggregateAvgContext) ctx).variableExpression();
+                paramContexts = ((AggregateAvgContext)ctx).aggregationParams();
+                aggregationFunction = new AggregationAvgFunction();
+                break;
+            }
+            default:
+                throw new RuntimeException("Invalid type");
+        }
         // Get the context that represents our dataset variable.
-        VariableContext datasetContext = extractDatasetContext(ctx.variableExpression());
+        VariableContext datasetContext = extractDatasetContext(variableExpressionContext);
 
         // Create a component visitor for the dataset.
         Dataset dataset = datasetExpressionVisitor.visit(datasetContext);
@@ -144,13 +176,13 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
 
         // All measures or only the one selected.
         Set<Component> measureComponents = computeMeasureComponentList(
-                ctx.variableExpression(),
+                variableExpressionContext,
                 dataset,
                 componentVisitor
         );
 
         Set<Component> aggregationComponents = Sets.newHashSet();
-        AggregationParamsContext paramContexts = ctx.aggregationParams();
+
         for (VariableExpressionContext parameterVariableContext : paramContexts.variableExpression()) {
 
             // Check that the dataset names are the same.
@@ -169,7 +201,7 @@ public class AggregationVisitor extends VTLDatasetExpressionVisitor<AggregationO
                 .collect(Collectors.toSet());
 
         Set<Component> components = computeAggregationComponents(aggregationComponents, availableIdentifiers, paramContexts.aggregationClause);
-        return getSumOperation(dataset, Lists.newArrayList(components), Lists.newArrayList(measureComponents));
-    }
 
+        return getAggregationOperation(dataset, Lists.newArrayList(components), Lists.newArrayList(measureComponents), aggregationFunction);
+    }
 }
