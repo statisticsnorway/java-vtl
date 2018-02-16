@@ -85,6 +85,10 @@ public abstract class VTLNumber<T extends Number> extends VTLObject<T> {
     }
     
     public VTLNumber divide(Number divisor) {
+        if (divisor.doubleValue() == 0) {
+            throw new IllegalArgumentException("Cannot divide by zero");
+        }
+
         Number dividend = get();
         return VTLNumber.of(dividend.doubleValue() / divisor.doubleValue());
     }
