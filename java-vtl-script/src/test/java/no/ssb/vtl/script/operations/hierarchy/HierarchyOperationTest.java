@@ -37,13 +37,7 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.io.Resources;
-import no.ssb.vtl.model.Component;
-import no.ssb.vtl.model.DataPoint;
-import no.ssb.vtl.model.DataStructure;
-import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
-import no.ssb.vtl.model.VTLNumber;
-import no.ssb.vtl.model.VTLObject;
+import no.ssb.vtl.model.*;
 import no.ssb.vtl.script.support.VTLPrintStream;
 import org.brotli.dec.BrotliInputStream;
 import org.junit.Test;
@@ -65,6 +59,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -570,6 +565,84 @@ public class HierarchyOperationTest extends RandomizedTest {
 
         PrintStream file = new PrintStream(new FileOutputStream("/Users/hadrien/Projects/java-vtl/result_account_2015"));
         result.getData().forEach(file::println);
+
+    }
+
+    @Test
+    public void testWithDuplicates() {
+        // Use case from Agil:
+        //
+        //                           +-----+
+        //                           | FG2 |
+        //                           +--+--+
+        //                              |
+        //                   +---(+)----+---(+)---+
+        //                   |                    |
+        //               +---+---+            +---+---+
+        //     +---------+ FGK22 +-------+  +-+ FGF10 +--------+
+        //     |         +---+---+       |  | +---+---+        |
+        //    (-)           (+)      +------+    (+)          (-)
+        //     |             |       |   |        |            |
+        //  +--+--+       +--+--+   (+) (+)    +--+--+      +--+--+
+        //  | 321 |       | FG4 +----+   +-----+ FG1 |      | 711 |
+        //  +-----+       +-----+              +-----+      +-----+
+        //
+        // The values matching FG4 and FG1 should appear twice in the result.
+
+        MutableValueGraph<VTLObject, Composition> graph = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+        graph.putEdgeValue(VTLObject.of("FGK22"), VTLObject.of("FG2"), Composition.UNION);
+        graph.putEdgeValue(VTLObject.of("FGF10"), VTLObject.of("FG2"), Composition.UNION);
+
+        graph.putEdgeValue(VTLObject.of("321"), VTLObject.of("FGK22"), Composition.COMPLEMENT);
+        graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FGK22"), Composition.UNION);
+        graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FGK22"), Composition.UNION);
+
+        graph.putEdgeValue(VTLObject.of("711"), VTLObject.of("FGF10"), Composition.COMPLEMENT);
+        graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FGF10"), Composition.UNION);
+        graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FGF10"), Composition.UNION);
+
+        // Test
+        graph.putEdgeValue(VTLObject.of("321"), VTLObject.of("FG2"), Composition.UNION);
+        graph.putEdgeValue(VTLObject.of("711"), VTLObject.of("FG2"), Composition.UNION);
+
+        //graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FG2"), Composition.COMPLEMENT);
+        //graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FG2"), Composition.COMPLEMENT);
+
+        StaticDataset dataset = StaticDataset.create()
+                .addComponent("CODE", IDENTIFIER, String.class)
+                .addComponent("VALUE", MEASURE, Long.class)
+
+                .addPoints("321", 1L)
+                .addPoints("FG4", 2L)
+                .addPoints("FG1", 4L)
+                .addPoints("711", 8L)
+
+                .build();
+
+
+        Component component = dataset.getDataStructure().get("CODE");
+        HierarchyOperation result = new HierarchyOperation(dataset, graph, component);
+
+        PS.println(result);
+
+        assertThat(result.getData()
+                .filter(vtlObjects -> vtlObjects.get(0).equals(VTLObject.of("FG2")))
+                .collect(Collectors.toList()))
+
+                .containsExactly(DataPoint.create("FG2", 12));
+
+        graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FG2"), Composition.COMPLEMENT);
+        graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FG2"), Composition.COMPLEMENT);
+
+        result = new HierarchyOperation(dataset, graph, component);
+
+        PS.println(result);
+
+        assertThat(result.getData()
+                .filter(vtlObjects -> vtlObjects.get(0).equals(VTLObject.of("FG2")))
+                .collect(Collectors.toList()))
+
+                .containsExactly(DataPoint.create("FG2", 6));
 
     }
 
