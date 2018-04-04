@@ -589,6 +589,28 @@ public class HierarchyOperationTest extends RandomizedTest {
         //
         // The values matching FG4 and FG1 should appear twice in the result.
 
+        StaticDataset.ValueBuilder datasetGraphBuilder = StaticDataset.create()
+                .addComponent("from", IDENTIFIER, String.class)
+                .addComponent("to", IDENTIFIER, String.class)
+                .addComponent("sign", IDENTIFIER, String.class)
+                .addPoints("FGK22", "FG2", "+")
+                .addPoints("FGF10", "FG2", "+")
+
+                .addPoints("321", "FGK22", "-")
+                .addPoints("FG4", "FGK22", "+")
+                .addPoints("FG1", "FGK22", "+")
+
+                .addPoints("711", "FGF10", "-")
+                .addPoints("FG4", "FGF10", "+")
+                .addPoints("FG1", "FGF10", "+")
+
+                .addPoints("321", "FG2", "+")
+                .addPoints("711", "FG2", "+")
+
+                .addPoints("FG4", "FG2", "-")
+                .addPoints("FG1", "FG2", "-");
+
+
         MutableValueGraph<VTLObject, Composition> graph = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
         graph.putEdgeValue(VTLObject.of("FGK22"), VTLObject.of("FG2"), Composition.UNION);
         graph.putEdgeValue(VTLObject.of("FGF10"), VTLObject.of("FG2"), Composition.UNION);
@@ -605,44 +627,56 @@ public class HierarchyOperationTest extends RandomizedTest {
         graph.putEdgeValue(VTLObject.of("321"), VTLObject.of("FG2"), Composition.UNION);
         graph.putEdgeValue(VTLObject.of("711"), VTLObject.of("FG2"), Composition.UNION);
 
-        //graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FG2"), Composition.COMPLEMENT);
-        //graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FG2"), Composition.COMPLEMENT);
 
         StaticDataset dataset = StaticDataset.create()
+                .addComponent("TYPE", IDENTIFIER, String.class)
                 .addComponent("CODE", IDENTIFIER, String.class)
                 .addComponent("VALUE", MEASURE, Long.class)
 
-                .addPoints("321", 1L)
-                .addPoints("FG4", 2L)
-                .addPoints("FG1", 4L)
-                .addPoints("711", 8L)
+                .addPoints("pos","321", 1L)
+                .addPoints("pos","FG4", 2L)
+                .addPoints("pos","FG1", 4L)
+                .addPoints("pos","711", 8L)
+
+                .addPoints("neg","321", -1L)
+                .addPoints("neg","FG4", -2L)
+                .addPoints("neg","FG1", -4L)
+                .addPoints("neg","711", -8L)
+
+                .addPoints("revpos","321", 8L)
+                .addPoints("revpos","FG4", 4L)
+                .addPoints("revpos","FG1", 2L)
+                .addPoints("revpos","711", 1L)
+
+                .addPoints("revneg","321", -8L)
+                .addPoints("revneg","FG4", -4L)
+                .addPoints("revneg","FG1", -2L)
+                .addPoints("revneg","711", -1L)
+
+                .addPoints("mixed","321", 1L)
+                .addPoints("mixed","FG4", 2L)
+                .addPoints("mixed","FG1", -4L)
+                .addPoints("mixed","711", -8L)
 
                 .build();
 
 
         Component component = dataset.getDataStructure().get("CODE");
-        HierarchyOperation result = new HierarchyOperation(dataset, graph, component);
+        HierarchyOperation result = new HierarchyOperation(dataset, datasetGraphBuilder.build(), component);
 
         PS.println(result);
 
         assertThat(result.getData()
-                .filter(vtlObjects -> vtlObjects.get(0).equals(VTLObject.of("FG2")))
+                .filter(vtlObjects -> vtlObjects.get(1).equals(VTLObject.of("FG2")))
                 .collect(Collectors.toList()))
 
-                .containsExactly(DataPoint.create("FG2", 12));
-
-        graph.putEdgeValue(VTLObject.of("FG4"), VTLObject.of("FG2"), Composition.COMPLEMENT);
-        graph.putEdgeValue(VTLObject.of("FG1"), VTLObject.of("FG2"), Composition.COMPLEMENT);
-
-        result = new HierarchyOperation(dataset, graph, component);
-
-        PS.println(result);
-
-        assertThat(result.getData()
-                .filter(vtlObjects -> vtlObjects.get(0).equals(VTLObject.of("FG2")))
-                .collect(Collectors.toList()))
-
-                .containsExactly(DataPoint.create("FG2", 6));
+                .containsExactly(
+                        DataPoint.create("mixed", "FG2", -2L),
+                        DataPoint.create("neg","FG2", -6L),
+                        DataPoint.create("pos","FG2", 6L),
+                        DataPoint.create("revneg","FG2", -6L),
+                        DataPoint.create("revpos","FG2", 6L)
+                );
 
     }
 
