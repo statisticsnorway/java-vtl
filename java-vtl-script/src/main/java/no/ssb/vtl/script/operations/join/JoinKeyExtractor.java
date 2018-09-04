@@ -57,7 +57,7 @@ public class JoinKeyExtractor implements UnaryOperator<DataPoint> {
     }
 
 
-    private JoinKeyExtractor(
+    public JoinKeyExtractor(
             DataStructure childStructure,
             Order order,
             Function<Component, Component> mapper
