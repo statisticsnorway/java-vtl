@@ -125,6 +125,9 @@ public class InnerJoinOperation extends AbstractJoinOperation {
             ).peek(new DataPointCapacityExpander(getDataStructure().size()));
             closer.register(result);
 
+
+
+            boolean first = true;
             while (iterator.hasNext()) {
                 left = right;
                 right = iterator.next();
@@ -137,9 +140,17 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                 );
                 closer.register(rightStream);
 
+                // The first left stream uses its own structure. After that, the left data structure
+                // will always be the resulting structure. We use a flag (first) to handle the first case
+                // since the hotfix needs to quickly released but this code should be refactored.
+
                 result = StreamSupport.stream(
                         new InnerJoinSpliterator<>(
-                                new JoinKeyExtractor(left.getDataStructure(), predicate, componentMapping.column(left)),
+                                new JoinKeyExtractor(
+                                        first ? left.getDataStructure() : getDataStructure(),
+                                        predicate,
+                                        first ? componentMapping.column(left)::get : c -> c
+                                ),
                                 new JoinKeyExtractor(right.getDataStructure(), predicate, componentMapping.column(right)),
                                 predicate,
                                 new InnerJoinMerger(getDataStructure(), right.getDataStructure()),
@@ -147,6 +158,8 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                                 rightStream.spliterator()
                         ), false
                 );
+
+                first = false;
             }
 
             // Close all the underlying streams.
