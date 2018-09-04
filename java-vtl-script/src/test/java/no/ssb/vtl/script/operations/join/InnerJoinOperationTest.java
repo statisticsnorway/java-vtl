@@ -58,6 +58,45 @@ import static org.assertj.core.api.Assertions.entry;
 public class InnerJoinOperationTest extends RandomizedTest {
 
     @Test
+    public void testInvalidKeyExtractorBug() {
+        // When the position of the first dataset's identifiers does not match those of
+        // the subsequent datasets the key extractor can return the wrong objects.
+        StaticDataset t1 = StaticDataset.create()
+                .addComponent("ms1", MEASURE, Long.class)
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addPoints(4L, "1", "2")
+                .build();
+
+        StaticDataset t2 = StaticDataset.create()
+                .addComponent("ms2", MEASURE, Long.class)
+                .addComponent("ms3", MEASURE, Long.class)
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addPoints(8L, 16L, "1", "2")
+                .build();
+
+        StaticDataset t3 = StaticDataset.create()
+                .addComponent("ms2", MEASURE, Long.class)
+                .addComponent("ms4", MEASURE, Long.class)
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addPoints(32L, 64L, "1", "2")
+                .build();
+
+        InnerJoinOperation result = new InnerJoinOperation(ImmutableMap.of(
+                "t1", t1,
+                "t2", t2,
+                "t3", t3
+        ));
+
+        assertThat(result.getData()).containsExactly(
+                DataPoint.create(4, "1", "2", 8, 16, 32, 64)
+        );
+
+    }
+
+    @Test
     @Seed("9DC9B02FF9A216E4")
     public void testRegression() throws Exception {
         //D0E9B354FC19C5A:9DC9B02FF9A216E4
