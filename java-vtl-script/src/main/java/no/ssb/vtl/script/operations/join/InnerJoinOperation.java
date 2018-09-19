@@ -21,7 +21,6 @@ package no.ssb.vtl.script.operations.join;
  */
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
@@ -200,9 +199,8 @@ public class InnerJoinOperation extends AbstractJoinOperation {
         }
 
         Order.Builder predicateBuilder = Order.create(fakeStructure.build());
-        Sets.SetView<Component> filteredRequestedOrder = Sets.intersection(requestedOrder.keySet(), commonIdentifiers);
-        for (Component component : filteredRequestedOrder) {
-            predicateBuilder.put(component, requestedOrder.get(component));
+        for (Component component : commonIdentifiers) {
+            predicateBuilder.put(component, requestedOrder.getOrDefault(component, Order.Direction.ASC));
         }
         return predicateBuilder.build();
     }
