@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Optional.ofNullable;
+import static no.ssb.vtl.script.visitors.AbstractVariableVisitor.unEscape;
 
 public class JoinBodyVisitor extends VTLBaseVisitor<Dataset> {
 
@@ -87,7 +88,7 @@ public class JoinBodyVisitor extends VTLBaseVisitor<Dataset> {
         VTLExpression expression = expressionVisitor.visit(joinAssignment.expression());
 
         // Calculate name
-        String componentName = joinAssignment.variable().getText();
+        String componentName = unEscape(joinAssignment.variable().getText());
 
 
         JoinAssignment result = new JoinAssignment(

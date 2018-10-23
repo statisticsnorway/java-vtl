@@ -91,7 +91,7 @@ public class VTLScriptEngineTest {
 
         // Will fail if a new keyword is added in the grammar or list of keywords without updating
         // the test.
-        assertThat(symmetricDifference).containsExactly(
+        assertThat(symmetricDifference).containsExactlyInAnyOrder(
                 "time_aggregate", "exists_in_all", "match_characters", 
                 "timeshift", "join", "flow_to_stock", "identifier", 
                 "string_from_date", "subscript", "transcode", 
@@ -142,6 +142,102 @@ public class VTLScriptEngineTest {
         assertThat(ds2).isInstanceOf(Dataset.class);
         assertThat(ds2).isSameAs(dataset);
 
+    }
+
+    @Test
+    public void testEscapedAssignment() throws Exception {
+
+        bindings.put("ds1", dataset);
+        engine.eval("'1escapedDs2' := ds1");
+
+        assertThat(bindings).containsKey("1escapedDs2");
+        Object ds2 = bindings.get("1escapedDs2");
+        assertThat(ds2).isInstanceOf(Dataset.class);
+        assertThat(ds2).isSameAs(dataset);
+
+    }
+
+    @Test
+    public void testEscapedExpression() throws Exception {
+
+        bindings.put("123escaped-ds1", dataset);
+        engine.eval("ds2 := '123escaped-ds1'");
+
+        assertThat(bindings).containsKey("ds2");
+        Object ds2 = bindings.get("ds2");
+        assertThat(ds2).isInstanceOf(Dataset.class);
+        assertThat(ds2).isSameAs(dataset);
+
+    }
+
+    @Test
+    public void testJoinAssignment() throws ScriptException {
+        Dataset simpleDataset = StaticDataset.create()
+                .addComponent("id", Role.IDENTIFIER, String.class)
+                .addComponent("me", Role.MEASURE, Long.class)
+                .addPoints("id", 0L)
+                .build();
+
+        bindings.put("ds", simpleDataset);
+        engine.eval("/* join assignment */" +
+                "res := [ds] {" +
+                "   assigned := me + 1" +
+                "}");
+
+        assertThat(bindings).containsKey("res");
+        Object res = bindings.get("res");
+        assertThat(res).isInstanceOf(Dataset.class);
+        assertThat(((Dataset)res).getDataStructure()).containsKeys("assigned");
+        assertThat(((Dataset) res).getData()).containsExactly(
+                DataPoint.create("id", 0L, +1L)
+        );
+    }
+
+    @Test
+    public void testJoinEscapedAssignment() throws ScriptException {
+
+        Dataset simpleDataset = StaticDataset.create()
+                .addComponent("id", Role.IDENTIFIER, String.class)
+                .addComponent("me", Role.MEASURE, Long.class)
+                .addPoints("id", 0L)
+                .build();
+
+        bindings.put("ds", simpleDataset);
+        engine.eval("/* join assignment */" +
+                "res := [ds] {" +
+                "   '123escaped-assigned' := me + 1" +
+                "}");
+
+        assertThat(bindings).containsKey("res");
+        Object res = bindings.get("res");
+        assertThat(res).isInstanceOf(Dataset.class);
+        assertThat(((Dataset)res).getDataStructure()).containsKeys("123escaped-assigned");
+        assertThat(((Dataset) res).getData()).containsExactly(
+                DataPoint.create("id", 0L, 1L)
+        );
+    }
+
+    @Test
+    public void testJoinEscapedExpression() throws ScriptException {
+        Dataset simpleDataset = StaticDataset.create()
+                .addComponent("id", Role.IDENTIFIER, String.class)
+                .addComponent("123escaped-me", Role.MEASURE, Long.class)
+                .addPoints("id", 0L)
+                .build();
+
+        bindings.put("ds", simpleDataset);
+        engine.eval("/* join assignment */" +
+                "res := [ds] {" +
+                "   assigned := '123escaped-me' + 1" +
+                "}");
+
+        assertThat(bindings).containsKey("res");
+        Object res = bindings.get("res");
+        assertThat(res).isInstanceOf(Dataset.class);
+        assertThat(((Dataset)res).getDataStructure()).containsKeys("assigned");
+        assertThat(((Dataset) res).getData()).containsExactly(
+                DataPoint.create("id", 0L, 1L)
+        );
     }
 
     @Test
@@ -337,7 +433,7 @@ public class VTLScriptEngineTest {
                 .addComponent("id1", Role.IDENTIFIER, String.class)
                 .addComponent("m1", Role.MEASURE, Long.class)
                 .addComponent("m2", Role.MEASURE, Long.class)
-                .addComponent("m3", Role.MEASURE, Long.class)
+                .addComponent("123-m3", Role.MEASURE, Long.class)
 
                 .addPoints("1", 101L, 102L, 103L)
                 .addPoints("2", 201L, 202L, 203L)
@@ -347,8 +443,8 @@ public class VTLScriptEngineTest {
 
         bindings.put("ds1", ds1);
         engine.eval("ds2 := [ds1] {" +
-                "  total := ds1.m1 + ds1.m2 + ds1.m3," +
-                "  fold ds1.m1, ds1.m2, ds1.m3, total to type, value" +
+                "  total := ds1.m1 + ds1.m2 + ds1.'123-m3'," +
+                "  fold ds1.m1, m2, ds1.'123-m3', total to type, '123-value'" +
                 "}"
         );
 
@@ -358,7 +454,7 @@ public class VTLScriptEngineTest {
         assertThat(ds2.getDataStructure().getRoles()).containsOnly(
                 entry("id1", Role.IDENTIFIER),
                 entry("type", Role.IDENTIFIER),
-                entry("value", Role.MEASURE)
+                entry("123-value", Role.MEASURE)
         );
 
         assertThat(ds2.getData()).flatExtracting(input -> input)
@@ -366,17 +462,17 @@ public class VTLScriptEngineTest {
                 .containsExactly(
                         "1", "m1", 101L,
                         "1", "m2", 102L,
-                        "1", "m3", 103L,
+                        "1", "123-m3", 103L,
                         "1", "total", 101L + 102L + 103L,
 
                         "2", "m1", 201L,
                         "2", "m2", 202L,
-                        "2", "m3", 203L,
+                        "2", "123-m3", 203L,
                         "2", "total", 201L + 202L + 203L,
 
                         "3", "m1", 301L,
                         "3", "m2", 302L,
-                        "3", "m3", 303L,
+                        "3", "123-m3", 303L,
                         "3", "total", 301L + 302L + 303L
                 );
     }

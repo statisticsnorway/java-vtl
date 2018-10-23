@@ -9,9 +9,9 @@ package no.ssb.vtl.script.visitors;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,9 @@ import no.ssb.vtl.script.expressions.logic.OrExpression;
 import no.ssb.vtl.script.expressions.logic.XorExpression;
 import no.ssb.vtl.script.functions.VTLConcatenation;
 import no.ssb.vtl.script.visitors.functions.NativeFunctionsVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import javax.script.Bindings;
 import java.util.function.Predicate;
@@ -66,15 +68,41 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
 
     private final LiteralVisitor literalVisitor = LiteralVisitor.getInstance();
     private final NativeFunctionsVisitor nativeFunctionsVisitor = new NativeFunctionsVisitor(this);
-
-    public Bindings getBindings() {
-        return scope;
-    }
-
     private final Bindings scope;
 
     public ExpressionVisitor(Bindings scope) {
         this.scope = checkNotNull(scope);
+    }
+
+    private static boolean isNull(VTLTyped typed) {
+        return VTLObject.class.equals(typed.getVTLType());
+    }
+
+    private static String checkVariableExist(Bindings bindings, VTLParser.VariableContext ctx) {
+        String identifier = ctx.getText();
+        // TODO: Remove escape logic.
+        // TODO: Already in superclass
+        identifier = unEscape(identifier);
+
+        if (bindings.containsKey(identifier))
+            return identifier;
+
+        throw new ContextualRuntimeException(
+                format("undefined variable %s", identifier),
+                ctx
+        );
+    }
+
+    private static String unEscape(String identifier) {
+        // Unescape.
+        if (identifier.startsWith("\'") && identifier.endsWith("\'")) {
+            identifier = identifier.substring(1, identifier.length() - 1);
+        }
+        return identifier;
+    }
+
+    public Bindings getBindings() {
+        return scope;
     }
 
     @Override
@@ -103,7 +131,7 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
 
     @Override
     public VTLExpression visitUnaryExpr(VTLParser.UnaryExprContext ctx) {
-        VTLExpression operand = visitTypedExpression(ctx.expression(), VTLBoolean.class);
+        VTLExpression operand = visitTyped(ctx.expression(), VTLBoolean.class);
         switch (ctx.op.getType()) {
             case VTLParser.NOT:
                 return new NotExpression(operand);
@@ -112,16 +140,12 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         }
     }
 
-    private static boolean isNull(VTLTyped typed) {
-        return VTLObject.class.equals(typed.getVTLType());
-    }
-
     @Override
     public VTLExpression visitArithmeticExpr(VTLParser.ArithmeticExprContext ctx) {
 
         // Check that the operands are of type number.
-        VTLExpression leftExpression = visitTypedExpression(ctx.left, VTLNumber.class);
-        VTLExpression rightExpression = visitTypedExpression(ctx.right, VTLNumber.class);
+        VTLExpression leftExpression = visitTyped(ctx.left, VTLNumber.class);
+        VTLExpression rightExpression = visitTyped(ctx.right, VTLNumber.class);
 
         switch (ctx.op.getType()) {
             case VTLParser.MUL:
@@ -197,8 +221,8 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
     private VTLExpression getBooleanExpression(VTLParser.BinaryExprContext ctx) {
 
         // Check that the operands are of type boolean.
-        VTLExpression leftExpression = visitTypedExpression(ctx.left, VTLBoolean.class);
-        VTLExpression rightExpression = visitTypedExpression(ctx.right, VTLBoolean.class);
+        VTLExpression leftExpression = visitTyped(ctx.left, VTLBoolean.class);
+        VTLExpression rightExpression = visitTyped(ctx.right, VTLBoolean.class);
 
         VTLExpression result;
         switch (ctx.op.getType()) {
@@ -217,7 +241,10 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         return result;
     }
 
-    private VTLExpression visitTypedExpression(VTLParser.ExpressionContext ctx, Class<? extends VTLObject> requiredType) {
+    /**
+     * Same as {@link #visit(ParseTree)} but with type check.
+     */
+    public VTLExpression visitTyped(ParserRuleContext ctx, Class<? extends VTLObject> requiredType) {
         VTLExpression expression = visit(ctx);
         if (!isNull(expression) && !requiredType.isAssignableFrom(expression.getVTLType())) {
             throw new ContextualRuntimeException(
@@ -259,7 +286,12 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
 
     @Override
     public VTLExpression visitUserFunctionCall(VTLParser.UserFunctionCallContext ctx) {
-        throw new IllegalArgumentException("undefined function " +  ctx.functionName.getText());
+        // TODO: look for function. Check signature.
+
+        throw new ContextualRuntimeException(
+                "undefined function " + ctx.functionName.getText(),
+                ctx
+        );
     }
 
     @Override
@@ -286,20 +318,6 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         } else {
             throw new UnsupportedOperationException("[" + leftIdentifier + "] was not a dataset");
         }
-    }
-
-    private static String checkVariableExist(Bindings bindings, VTLParser.VariableContext ctx) {
-        String identifier = ctx.getText();
-        // TODO: Remove escape logic.
-        identifier = unEscape(identifier);
-
-        if (bindings.containsKey(identifier))
-            return identifier;
-
-        throw new ContextualRuntimeException(
-                format("undefined variable %s", identifier),
-                ctx
-        );
     }
 
     @Override
@@ -362,13 +380,5 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         } catch (IllegalArgumentException iae) {
             throw new ContextualRuntimeException(iae, ctx);
         }
-    }
-
-    private static String unEscape(String identifier) {
-        // Unescape.
-        if (identifier.startsWith("\'") && identifier.endsWith("\'")) {
-            identifier = identifier.substring(1, identifier.length() - 1);
-        }
-        return identifier;
     }
 }

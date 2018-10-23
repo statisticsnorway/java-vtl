@@ -76,6 +76,21 @@ public final class Order extends ForwardingMap<Component, Order.Direction> imple
 
     }
 
+    public Component get(String column) {
+        return structure.get(column);
+    }
+
+    public boolean containsKey(String column) {
+        return containsKey(get(column));
+    }
+
+    public Direction getOrDefault(String key, Direction defaultValue) {
+        Direction v;
+        return (((v = get(get(key))) != null) || containsKey(key))
+                ? v
+                : defaultValue;
+    }
+
     @Override
     public String toString() {
         MoreObjects.ToStringHelper helper = MoreObjects.toStringHelper(this);

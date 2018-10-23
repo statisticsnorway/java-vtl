@@ -50,7 +50,7 @@ public abstract class AbstractVariableVisitor<T> extends VTLBaseVisitor<T> {
         throw new ContextualRuntimeException(format("undefined variable %s", ctx.getText()), ctx);
     }
 
-    private static String unEscape(String identifier) {
+    public static String unEscape(String identifier) {
         // Unescape.
         if (identifier.startsWith("\'") && identifier.endsWith("\'")) {
             return identifier.substring(1, identifier.length() - 1);

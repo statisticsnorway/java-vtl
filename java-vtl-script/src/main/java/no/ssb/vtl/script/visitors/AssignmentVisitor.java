@@ -9,9 +9,9 @@ package no.ssb.vtl.script.visitors;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,20 +27,23 @@ import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
 import no.ssb.vtl.script.error.ContextualRuntimeException;
+import no.ssb.vtl.script.visitors.foreach.ForeachVisitor;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static no.ssb.vtl.script.visitors.AbstractVariableVisitor.unEscape;
 
 /**
  * Assignment visitor.
  */
 public class AssignmentVisitor extends VTLBaseVisitor<Object> {
 
-    private final Bindings bindings;
+    protected final Bindings bindings;
     private final ExpressionVisitor expressionVisitor;
 
     private final ConnectorVisitor connectorVisitor;
@@ -49,26 +52,37 @@ public class AssignmentVisitor extends VTLBaseVisitor<Object> {
     private final CheckVisitor checkVisitor;
     private final HierarchyVisitor hierarchyVisitor;
     private final AggregationVisitor aggregationVisitor;
-    
-    public AssignmentVisitor(ScriptContext context, List<Connector> connectors) {
-        checkNotNull(context, "the context was null");
+    private final ForeachVisitor foreachVisitor;
 
-        this.bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
-        this.expressionVisitor = new ExpressionVisitor(this.bindings);
+    public AssignmentVisitor(ScriptContext context, List<Connector> connectors) {
+        this(
+                checkNotNull(context, "the context was null").getBindings(ScriptContext.ENGINE_SCOPE),
+                connectors
+        );
+    }
+
+    public AssignmentVisitor(Bindings bindings) {
+        this(bindings, Collections.emptyList());
+    }
+
+    public AssignmentVisitor(Bindings bindings, List<Connector> connectors) {
+        this.bindings = checkNotNull(bindings);
+        expressionVisitor = new ExpressionVisitor(this.bindings);
 
         connectorVisitor = new ConnectorVisitor(connectors);
         clausesVisitor = new ClauseVisitor();
+
         datasetExpressionVisitor = new DatasetExpressionVisitor(expressionVisitor);
+        foreachVisitor = new ForeachVisitor(expressionVisitor);
+
         checkVisitor = new CheckVisitor(datasetExpressionVisitor);
         hierarchyVisitor = new HierarchyVisitor(datasetExpressionVisitor);
         aggregationVisitor = new AggregationVisitor(datasetExpressionVisitor);
     }
 
-
-    
     @Override
     public Object visitAssignment(VTLParser.AssignmentContext ctx) {
-        String name = ctx.variable().getText();
+        String name = unEscape(ctx.variable().getText());
         Object value;
         if (ctx.datasetExpression() != null) {
             value = visit(ctx.datasetExpression());
@@ -82,6 +96,11 @@ public class AssignmentVisitor extends VTLBaseVisitor<Object> {
         }
         bindings.put(name, value);
         return value;
+    }
+
+    @Override
+    public Object visitRepeat(VTLParser.RepeatContext ctx) {
+        return foreachVisitor.visitRepeat(ctx);
     }
 
     @Override
@@ -121,12 +140,13 @@ public class AssignmentVisitor extends VTLBaseVisitor<Object> {
     public Object visitWithHierarchy(VTLParser.WithHierarchyContext ctx) {
         return hierarchyVisitor.visit(ctx.hierarchyExpression());
     }
-    
+
     /**
      * {@inheritDoc}
      * <p>
      * <p>The default implementation returns the result of calling
      * {@link #visitChildren} on {@code ctx}.</p>
+     *
      * @param ctx
      */
     @Override

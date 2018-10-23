@@ -170,9 +170,17 @@ public class VTLScriptEngine extends AbstractScriptEngine {
                 "xor", "not", "is null", "is not null",
                 "inner", "outer", "cross", "on", "rename",
                 "fold", "unfold", "keep", "drop", "filter", "to", "union", "nvl", "as", "isnull", "check",
-                "hierarchy", "abs", "ceil", "date_from_string", "exp", "floor", "ln", "log", "mod", "nroot",
+
+                "hierarchy",
+
+                "abs", "ceil", "date_from_string", "exp", "floor", "ln", "log", "mod", "nroot",
+
                 "power", "round", "sqrt", "string_from_number", "substr", "trunc",
+
                 "trim", "ltrim", "lower", "rtrim", "upper",
+
+                "foreach", "in", "do", "done",
+
                 "sum", "avg", "along", "group by", "if", "then", "else", "elseif")));
         allKeywords.put("builtinFunctions", new HashSet<>(Arrays.asList("integer_from_string",
                 "float_from_string", "string_from_number")));
@@ -191,7 +199,7 @@ public class VTLScriptEngine extends AbstractScriptEngine {
     /**
      * Run loop
      */
-    private Object run(VTLParser.StartContext start, Consumer<VTLScriptException> errorConsumer, ScriptContext context) throws VTLScriptException {
+    protected Object run(VTLParser.StartContext start, Consumer<VTLScriptException> errorConsumer, ScriptContext context) throws VTLScriptException {
         AssignmentVisitor assignmentVisitor = new AssignmentVisitor(context, connectors);
         Object last = null;
         for (VTLParser.StatementContext statementContext : start.statement()) {

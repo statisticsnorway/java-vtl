@@ -30,6 +30,7 @@ import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static no.ssb.vtl.script.visitors.AbstractVariableVisitor.unEscape;
 
 public class FoldVisitor extends VTLDatasetExpressionVisitor<FoldOperation> {
 
@@ -43,8 +44,8 @@ public class FoldVisitor extends VTLDatasetExpressionVisitor<FoldOperation> {
 
     @Override
     public FoldOperation visitJoinFoldExpression(VTLParser.JoinFoldExpressionContext ctx) {
-        String dimension = ctx.dimension.getText();
-        String measure = ctx.measure.getText();
+        String dimension = unEscape(ctx.dimension.getText());
+        String measure = unEscape(ctx.measure.getText());
 
         Set<String> elements = ctx.variableExpression().stream()
                 .map(componentVisitor::visit)

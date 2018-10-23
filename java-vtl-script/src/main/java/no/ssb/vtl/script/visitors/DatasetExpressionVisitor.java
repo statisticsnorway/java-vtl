@@ -26,6 +26,7 @@ import no.ssb.vtl.model.VTLExpression;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
 import no.ssb.vtl.script.VTLDataset;
+import no.ssb.vtl.script.error.ContextualRuntimeException;
 import no.ssb.vtl.script.operations.union.UnionOperation;
 import no.ssb.vtl.script.visitors.join.JoinBodyVisitor;
 
@@ -58,7 +59,12 @@ public class DatasetExpressionVisitor extends VTLBaseVisitor<Dataset> {
         for (VTLParser.DatasetExpressionContext datasetExpressionContext : ctx.datasetExpression()) {
             datasets.add(visit(datasetExpressionContext));
         }
-        return new UnionOperation(datasets);
+        try {
+            return new UnionOperation(datasets);
+        } catch (Exception e) {
+            throw new ContextualRuntimeException(e, ctx);
+        }
+
     }
 
     @Override

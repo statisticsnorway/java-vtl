@@ -408,15 +408,15 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
         return Optional.empty();
     }
 
-    static private class ComposedDataPoint extends DataPoint {
-        private final Composition sign;
+    static class ComposedDataPoint extends DataPoint {
+        final Composition sign;
 
-        private ComposedDataPoint(Collection<? extends VTLObject> c, Composition sign) {
+        ComposedDataPoint(Collection<? extends VTLObject> c, Composition sign) {
             super(c);
             this.sign = checkNotNull(sign);
         }
 
-        private static ComposedDataPoint invert(ComposedDataPoint original) {
+        static ComposedDataPoint invert(ComposedDataPoint original) {
             switch (original.getSign()) {
                 case COMPLEMENT:
                     return new ComposedDataPoint(original, Composition.UNION);
