@@ -102,11 +102,11 @@ require.config({
 require([
     'rd', 'angular', 'codemirror-simple',
     'smart-table', 'ui.bootstrap', 'ui.codemirror',
-    '../../js/directives/vtl-codemirror',
-    '../../js/directives/vtl-dataset',
-    '../../js/directives/vtl-data',
-    '../../js/directives/vtl-example',
-    '../../js/directives/vtl-table'], function (rd, angular, sm) {
+    '../js/directives/vtl-codemirror',
+    '../js/directives/vtl-dataset',
+    '../js/directives/vtl-data',
+    '../js/directives/vtl-example',
+    '../js/directives/vtl-table'], function (rd, angular, sm) {
 
     rd.Diagram.VERTICAL_SEPARATION = 20;
     rd.Diagram.INTERNAL_ALIGNMENT = "left";
