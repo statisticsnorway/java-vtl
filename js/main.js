@@ -11,7 +11,7 @@ require.config({
 
         'codemirror': '//unpkg.com/codemirror@5.23.0/lib/codemirror',
         'codemirror-simple': '//unpkg.com/codemirror@5.23.0/addon/mode/simple',
-        'rd': base_url + '/../js/railroad-diagrams',
+        'rd': base_url + '/js/railroad-diagrams',
         'angular': '//unpkg.com/angular@1.6.1/angular',
         'smart-table': 'https://unpkg.com/angular-smart-table@2.1.8/dist/smart-table',
         'ui.bootstrap': 'https://unpkg.com/angular-ui-bootstrap@2.5.0/dist/ui-bootstrap-tpls',
