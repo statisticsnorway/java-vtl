@@ -48,7 +48,7 @@ define(['angular',], function (angular) {
                         $http({
                             data: execution,
                             method: 'POST',
-                            url: 'https://javavtl.staging.ssbmod.net/vtl/execute2'
+                            url: 'https://javavtl.staging.ssbmod.net/execute2'
                         }).then(function successCallback(response) {
                             $scope.loading = false;
                             $scope.outputDatasets = response.data.datasets;
