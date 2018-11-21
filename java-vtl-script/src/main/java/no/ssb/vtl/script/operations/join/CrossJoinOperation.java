@@ -68,39 +68,6 @@ public class CrossJoinOperation extends OuterJoinOperation {
 
     @Override
     public Optional<Stream<DataPoint>> getData(Order requestedOrder, Filtering filtering, Set<String> components) {
-        Iterator<Dataset> iterator = getChildren().iterator();
-
-        // Optimization
-        if (getChildren().size() == 1)
-            return Optional.of(order(requestedOrder, filtering, components, iterator.next()));
-
-        Dataset left = iterator.next();
-        Dataset right = left;
-
-        // Create the resulting data points.
-        final DataStructure joinStructure = getDataStructure();
-        final DataStructure structure = left.getDataStructure();
-        Stream<DataPoint> result = order(requestedOrder, filtering, components, left)
-                .map(dataPoint -> joinStructure.fromMap(
-                        structure.asMap(dataPoint)
-                ));
-
-        while (iterator.hasNext()) {
-            left = right;
-            right = iterator.next();
-            result = Streams.zip(
-                    result,
-                    order(requestedOrder, filtering, components, right),
-                    getMerger(left, right)
-            );
-        }
-
-        return Optional.of(result);
-    }
-
-    private Stream<DataPoint> order(Order requestedOrder, Filtering filtering, Set<String> components, Dataset first) {
-        return first.getData(requestedOrder, filtering, components).orElseGet(
-                () -> first.getData().sorted(requestedOrder).filter(filtering)
-        );
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

@@ -9,6 +9,11 @@ h1[id]:before, h2[id]:before, h3[id]:before, h4[id]:before, h5[id]:before, h6[id
     height: 75px;
 }
 
+p > img {
+    max-width: 100%;
+    height: auto;
+}
+
 ul.nav li.first-level {
     font-weight: bold;
 }
@@ -98,8 +103,6 @@ div.source-links {
     .bs-sidebar.affix {
         position: fixed; /* Undo the static from mobile first approach */
         top: 80px;
-        height: 85%;
-        overflow-y: scroll;
     }
     .bs-sidebar.affix-bottom {
         position: absolute; /* Undo the static from mobile first approach */

@@ -139,7 +139,7 @@ public class InnerJoinSpliteratorTest {
 
         InnerJoinSpliterator<List<String>, List<String>, List<String>, Map<String, List<String>>> innerJoinSpliterator = join(predicate);
 
-        assertThat(innerJoinSpliterator.estimateSize()).isEqualTo(Long.MAX_VALUE);
+        assertThat(innerJoinSpliterator.estimateSize()).isEqualTo(left.size() + right.size());
     }
 
     @Test

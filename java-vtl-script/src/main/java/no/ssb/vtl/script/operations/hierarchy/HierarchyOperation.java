@@ -290,7 +290,6 @@ public class HierarchyOperation extends AbstractUnaryDatasetOperation {
         final Order groupOrder = computeOrder();
         final Order groupPredicate = computePredicate();
 
-        // TODO: Save the graph in the correct order.
         final List<VTLObject> sorted = getGraphValues();
 
         final Map<Component, HierarchyAccumulator> accumulators = createAccumulatorMap();

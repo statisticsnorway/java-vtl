@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations.join;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,8 +30,7 @@ import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
-import no.ssb.vtl.model.VTLNumber;
+import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.support.VTLPrintStream;
 import org.junit.Test;
@@ -39,21 +38,14 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static no.ssb.vtl.model.Component.Role.ATTRIBUTE;
 import static no.ssb.vtl.model.Component.Role.IDENTIFIER;
 import static no.ssb.vtl.model.Component.Role.MEASURE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class OuterJoinOperationTest extends RandomizedTest {
 
@@ -123,13 +115,13 @@ public class OuterJoinOperationTest extends RandomizedTest {
                 currentData.add(tuple(points));
             }
 
-            Dataset dataset = mock(Dataset.class, datasetName);
+            StaticDataset.ValueBuilder datasetBuilder = StaticDataset.create(currentStructure);
+            currentData.forEach(datasetBuilder::addPoints);
+            Dataset dataset = datasetBuilder.build();
+
             datasets.put(datasetName, dataset);
             dataStructures.put(datasetName, currentStructure);
-            when(dataset.getDataStructure()).thenReturn(currentStructure);
             data.put(datasetName, currentData);
-            when(dataset.getData()).thenAnswer(o -> currentData.stream());
-            when(dataset.getData(any(Order.class))).thenReturn(Optional.empty());
         }
 
         OuterJoinOperation result = new OuterJoinOperation(datasets);
@@ -142,39 +134,25 @@ public class OuterJoinOperationTest extends RandomizedTest {
     public void testDefault() throws Exception {
 
 
-        Dataset ds1 = mock(Dataset.class, "ds1");
-        Dataset ds2 = mock(Dataset.class, "ds2");
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addComponent("id3", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addPoints("1", "a", "id", "left 1a")
+                .addPoints("2", "b", "id", "left 2b")
+                .addPoints("3", "c", "id", "left 3c")
+                .build();
 
-        DataStructure structure1 = DataStructure.of(
-                "id1", IDENTIFIER, String.class,
-                "id2", IDENTIFIER, String.class,
-                "id3", IDENTIFIER, String.class,
-                "value", MEASURE, String.class
-        );
-
-        DataStructure structure2 = DataStructure.of(
-                "id1", IDENTIFIER, String.class,
-                "id2", IDENTIFIER, String.class,
-                "id3", IDENTIFIER, String.class,
-                "value", MEASURE, String.class
-        );
-
-        given(ds1.getDataStructure()).willReturn(structure1);
-        given(ds2.getDataStructure()).willReturn(structure2);
-
-        given(ds1.getData()).willAnswer(o -> Stream.of(
-                tuple("1", "a", "id", "left 1a"),
-                tuple("2", "b", "id", "left 2b"),
-                tuple("3", "c", "id", "left 3c")
-        ));
-        given(ds1.getData(any(Order.class))).willReturn(Optional.empty());
-
-        given(ds2.getData()).willAnswer(o -> Stream.of(
-                tuple("2", "b", "id", "right 2b"),
-                tuple("3", "c", "id", "right 3c"),
-                tuple("4", "d", "id", "right 4d")
-        ));
-        given(ds2.getData(any(Order.class))).willReturn(Optional.empty());
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addComponent("id3", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addPoints("2", "b", "id", "right 2b")
+                .addPoints("3", "c", "id", "right 3c")
+                .addPoints("4", "d", "id", "right 4d")
+                .build();
 
         AbstractJoinOperation result = new OuterJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2));
 
@@ -188,59 +166,78 @@ public class OuterJoinOperationTest extends RandomizedTest {
 
         // Check that the structure is correct. We expect:
         // common identifiers () + left and right.
-        assertThat(result.getDataStructure())
+        assertThat(result.getDataStructure().keySet())
                 .containsOnly(
-                        entry("id1", structure1.get("id1")),
-                        entry("id2", structure1.get("id2")),
-                        entry("id3", structure1.get("id3")),
-                        entry("ds1_value", structure1.get("value")),
-                        entry("ds2_value", structure2.get("value"))
+                        "id1",
+                        "id2",
+                        "id3",
+                        "ds1_value",
+                        "ds2_value"
                 );
 
         assertThat(result.getData())
-                .extracting(input -> input.stream().map(VTLObject::get).collect(Collectors.toList()))
                 .containsExactly(
-                        asList("1", "a", "id", "left 1a", null),
-                        asList("2", "b", "id", "left 2b", "right 2b"),
-                        asList("3", "c", "id", "left 3c", "right 3c"),
-                        asList("4", "d", "id", null, "right 4d")
+                        DataPoint.create("1", "a", "id", "left 1a", null),
+                        DataPoint.create("2", "b", "id", "left 2b", "right 2b"),
+                        DataPoint.create("3", "c", "id", "left 3c", "right 3c"),
+                        DataPoint.create("4", "d", "id", null, "right 4d")
                 );
     }
 
     @Test
     public void testOuterJoin() throws Exception {
 
-        Dataset ds1 = mock(Dataset.class, "ds1");
-        Dataset ds2 = mock(Dataset.class, "ds2");
+        DataStructure.Builder structure = DataStructure.builder()
+                .put("id1", IDENTIFIER, Long.class)
+                .put("value", MEASURE, String.class);
 
-        DataStructure structure1 = DataStructure.of(
-                "id1", IDENTIFIER, Long.class,
-                "value", MEASURE, String.class
-        );
+        Dataset ds1 = Stream.of(1, 1, 1, 2, 3, 5, 7, 7, 8, 8, 9, 9, 9, 10)
+                .map(id -> DataPoint.create(id, "ds1 " + id))
+                .collect(
+                        () -> StaticDataset.create(structure),
+                        StaticDataset.ValueBuilder::addPoints,
+                        (valueBuilder, valueBuilder2) -> {
+                        }
+                ).build();
 
-        DataStructure structure2 = DataStructure.of(
-                "id1", IDENTIFIER, Long.class,
-                "value", MEASURE, String.class
-        );
-
-        given(ds1.getDataStructure()).willReturn(structure1);
-        given(ds2.getDataStructure()).willReturn(structure2);
-
-        given(ds1.getData()).willAnswer(o -> Stream.of(1, 1, 1, 2, 3, 5, 7, 7, 8, 8, 9, 9, 9, 10)
-                .map(id -> Lists.newArrayList(
-                        VTLNumber.of(id), VTLObject.of("ds1 " + id)
-                ))
-                .map(DataPoint::create));
-        given(ds1.getData(any(Order.class))).willReturn(Optional.empty());
-
-        given(ds2.getData()).willAnswer(o -> Stream.of(1, 3, 3, 3, 3, 4, 5, 6, 8, 9, 9, 9, 10)
-                .map(id -> Lists.newArrayList(
-                        VTLNumber.of(id), VTLObject.of("ds2 " + id)
-                ))
-                .map(DataPoint::create));
-        given(ds2.getData(any(Order.class))).willReturn(Optional.empty());
+        Dataset ds2 = Stream.of(1, 3, 3, 3, 3, 4, 5, 6, 8, 9, 9, 9, 10)
+                .map(id -> DataPoint.create(id, "ds2 " + id))
+                .collect(
+                        () -> StaticDataset.create(structure),
+                        StaticDataset.ValueBuilder::addPoints,
+                        (valueBuilder, valueBuilder2) -> {
+                        }
+                ).build();
 
         AbstractJoinOperation result = new OuterJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2));
+
+        assertThat(result.getData()).containsExactly(
+                DataPoint.create(1L, "ds1 1", "ds2 1"),
+                DataPoint.create(1L, "ds1 1", "ds2 1"),
+                DataPoint.create(1L, "ds1 1", "ds2 1"),
+                DataPoint.create(2L, "ds1 2", null),
+                DataPoint.create(3L, "ds1 3", "ds2 3"),
+                DataPoint.create(3L, "ds1 3", "ds2 3"),
+                DataPoint.create(3L, "ds1 3", "ds2 3"),
+                DataPoint.create(3L, "ds1 3", "ds2 3"),
+                DataPoint.create(4L, null, "ds2 4"),
+                DataPoint.create(5L, "ds1 5", "ds2 5"),
+                DataPoint.create(6L, null, "ds2 6"),
+                DataPoint.create(7L, "ds1 7", null),
+                DataPoint.create(7L, "ds1 7", null),
+                DataPoint.create(8L, "ds1 8", "ds2 8"),
+                DataPoint.create(8L, "ds1 8", "ds2 8"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(9L, "ds1 9", "ds2 9"),
+                DataPoint.create(10L, "ds1 10", "ds2 10")
+        );
 
         VTLPrintStream vtlPrintStream = new VTLPrintStream(System.out);
         //vtlPrintStream.println(result.getDataStructure());
@@ -254,38 +251,30 @@ public class OuterJoinOperationTest extends RandomizedTest {
     @Test
     public void testOuterJoinWithUnequalIds() throws Exception {
 
-
-        Dataset ds1 = mock(Dataset.class, "ds1");
-        Dataset ds2 = mock(Dataset.class, "ds2");
-
-        DataStructure structure1 = DataStructure.of(
+        DataStructure structure = DataStructure.of(
                 "id1", IDENTIFIER, String.class,
                 "value", MEASURE, String.class
         );
 
-        DataStructure structure2 = DataStructure.of(
-                "id1", IDENTIFIER, String.class,
-                "value", MEASURE, String.class,
-                "id2", IDENTIFIER, String.class
-        );
 
-        given(ds1.getDataStructure()).willReturn(structure1);
-        given(ds2.getDataStructure()).willReturn(structure2);
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addPoints("1", "left 1")
+                .addPoints("2", "left 2")
+                .addPoints("3", "left 3")
+                .build();
 
-        given(ds1.getData()).willAnswer(o -> Stream.of(
-                tuple("1", "left 1"),
-                tuple("2", "left 2"),
-                tuple("3", "left 3")
-        ));
-        given(ds1.getData(any(Order.class))).willReturn(Optional.empty());
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addPoints("2", "right 2", "b")
+                .addPoints("2", "right 2e", "e")
+                .addPoints("3", "right 3", "c")
+                .addPoints("4", "right 4", "d")
+                .build();
 
-        given(ds2.getData()).willAnswer(o -> Stream.of(
-                tuple("2", "right 2", "b"),
-//TODO          tuple("2","right 2e", "e"),
-                tuple("3", "right 3", "c"),
-                tuple("4", "right 4", "d")
-        ));
-        given(ds2.getData(any(Order.class))).willReturn(Optional.empty());
 
         AbstractJoinOperation result = new OuterJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2));
 
@@ -298,22 +287,21 @@ public class OuterJoinOperationTest extends RandomizedTest {
 
         // Check that the structure is correct. We expect:
         // common identifiers () + left and right.
-        assertThat(result.getDataStructure())
-                .containsOnly(
-                        entry("id1", structure1.get("id1")),
-                        entry("ds1_value", structure1.get("value")),
-                        entry("ds2_value", structure2.get("value")),
-                        entry("id2", structure2.get("id2"))
+        assertThat(result.getDataStructure().keySet())
+                .containsExactly(
+                        "id1",
+                        "ds1_value",
+                        "ds2_value",
+                        "id2"
                 );
 
         assertThat(result.getData())
-                .extracting(input -> input.stream().map(VTLObject::get).collect(Collectors.toList()))
                 .containsExactly(
-                        asList("1", "left 1", null, null),
-                        asList("2", "left 2", "right 2", "b"),
-//FIXME                 asList("2", "left 2", "right 2e", "e"),
-                        asList("3", "left 3", "right 3", "c"),
-                        asList("4", null, "right 4", "d")
+                        DataPoint.create("1", "left 1", null, null),
+                        DataPoint.create("2", "left 2", "right 2", "b"),
+                        DataPoint.create("2", "left 2", "right 2e", "e"),
+                        DataPoint.create("3", "left 3", "right 3", "c"),
+                        DataPoint.create("4", null, "right 4", "d")
                 );
     }
 

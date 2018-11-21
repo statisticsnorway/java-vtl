@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations.hierarchy;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,7 @@ import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Order;
+import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.support.DatasetCloseWatcher;
 import no.ssb.vtl.script.support.VTLPrintStream;
@@ -94,6 +95,7 @@ public class HierarchyOperationTest extends RandomizedTest {
                 ZoneOffset.UTC
         ).toInstant();
     }
+
     private static List<Object> createAggregatedPopulation() {
         return Lists.newArrayList(
                 createInstant(2000), "Austria", 2000L, -2000L,
@@ -268,16 +270,13 @@ public class HierarchyOperationTest extends RandomizedTest {
         //Add point with null value in MC
         data.add(DataPoint.create(
                 Year.of(2006).atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC),
-                "Luxembourg", VTLObject.of((Object)null), VTLObject.of((Object)null)));
+                "Luxembourg", VTLObject.of((Object) null), VTLObject.of((Object) null)));
         data.add(DataPoint.create(
                 Year.of(2006).atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC),
                 "Holland", VTLObject.of(2006), VTLObject.of(-2006)));
         data.add(DataPoint.create(
                 Year.of(2007).atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC),
-                "Luxembourg", VTLObject.of((Object)null), VTLObject.of((Object)null)));
-
-
-
+                "Luxembourg", VTLObject.of((Object) null), VTLObject.of((Object) null)));
 
 
         Collections.shuffle(data, new Random(randomLong()));
@@ -418,7 +417,7 @@ public class HierarchyOperationTest extends RandomizedTest {
         Dataset dataset = createEmptyDataset(structure);
 
         assertThatThrownBy(() ->
-            new HierarchyOperation(dataset, graph, structure.get("m1"))
+                new HierarchyOperation(dataset, graph, structure.get("m1"))
         ).isNotNull().hasMessageContaining("m1");
     }
 
@@ -437,7 +436,7 @@ public class HierarchyOperationTest extends RandomizedTest {
         Dataset dataset = createEmptyDataset(structure);
 
         assertThatThrownBy(() ->
-            new HierarchyOperation(dataset, graph, structure.get("id2"))
+                new HierarchyOperation(dataset, graph, structure.get("id2"))
         ).isNotNull().hasMessageContaining("m4");
     }
 
@@ -660,6 +659,139 @@ public class HierarchyOperationTest extends RandomizedTest {
                 .extracting(VTLObject::get)
                 .containsOnlyElementsOf(aggregatedPopulation);
 
+    }
+
+    @Test
+    public void testNullZeroAndMissing() {
+
+        StaticDataset hierarchy = StaticDataset.create()
+                .addComponent("from", IDENTIFIER, String.class)
+                .addComponent("to", IDENTIFIER, String.class)
+                .addComponent("sign", IDENTIFIER, String.class)
+                .addPoints("Left", "TopPos", "+")
+                .addPoints("Right", "TopPos", "+")
+                .addPoints("Left", "TopNeg", "-")
+                .addPoints("Right", "TopNeg", "-")
+                .build();
+
+        StaticDataset data = StaticDataset.create()
+                .addComponent("case", IDENTIFIER, String.class)
+                .addComponent("node", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, Long.class)
+
+                .addPoints("AllNeg", "Left", -10L)
+                .addPoints("AllNeg", "Right", -5L)
+                .addPoints("AllPos", "Left", 10L)
+                .addPoints("AllPos", "Right", 5L)
+                .addPoints("LeftAbsentNeg", "Right", -5L)
+                .addPoints("LeftAbsentPos", "Right", 5L)
+                .addPoints("LeftMissingNeg", "Left", null)
+                .addPoints("LeftMissingNeg", "Right", -5L)
+                .addPoints("LeftMissingPos", "Left", null)
+                .addPoints("LeftMissingPos", "Right", 5L)
+                .addPoints("LeftNeg", "Left", -10L)
+                .addPoints("LeftNeg", "Right", 5L)
+                .addPoints("LeftZeroNeg", "Left", 0L)
+                .addPoints("LeftZeroNeg", "Right", -5L)
+                .addPoints("LeftZeroPos", "Left", 0L)
+                .addPoints("LeftZeroPos", "Right", 5L)
+                .addPoints("RightAbsentNeg", "Left", -10L)
+                .addPoints("RightAbsentPos", "Left", 10L)
+                .addPoints("RightMissingNeg", "Left", -10L)
+                .addPoints("RightMissingNeg", "Right", null)
+                .addPoints("RightMissingPos", "Left", 10L)
+                .addPoints("RightMissingPos", "Right", null)
+                .addPoints("RightNeg", "Left", 10L)
+                .addPoints("RightNeg", "Right", -5L)
+                .addPoints("RightZeroNeg", "Left", -10L)
+                .addPoints("RightZeroNeg", "Right", 0L)
+                .addPoints("RightZeroPos", "Left", 10L)
+                .addPoints("RightZeroPos", "Right", 0L)
+                .build();
+
+        HierarchyOperation result = new HierarchyOperation(data, hierarchy, data.getDataStructure().get("node"));
+
+        assertThat(result.getData()).containsExactlyInAnyOrder(
+                DataPoint.create("AllNeg", "Left", -10L),
+                DataPoint.create("AllNeg", "Right", -5L),
+                DataPoint.create("AllNeg", "TopPos", -15L),
+                DataPoint.create("AllNeg", "TopNeg", 15L),
+
+                DataPoint.create("AllPos", "Left", 10L),
+                DataPoint.create("AllPos", "Right", 5L),
+                DataPoint.create("AllPos", "TopPos", 15L),
+                DataPoint.create("AllPos", "TopNeg", -15L),
+
+                // No left.
+                DataPoint.create("LeftAbsentNeg", "Right", -5L),
+                DataPoint.create("LeftAbsentNeg", "TopPos", -5L),
+                DataPoint.create("LeftAbsentNeg", "TopNeg", -5L),
+
+                // No left.
+                DataPoint.create("LeftAbsentPos", "Right", 5L),
+                DataPoint.create("LeftAbsentPos", "TopPos", 5L),
+                DataPoint.create("LeftAbsentPos", "TopNeg", 5L),
+
+                DataPoint.create("RightAbsentNeg", "Left", -10L),
+                // No right
+                DataPoint.create("RightAbsentNeg", "TopPos", -10L),
+                DataPoint.create("RightAbsentNeg", "TopNeg", -10L),
+
+                DataPoint.create("RightAbsentPos", "Left", 10L),
+                // No right
+                DataPoint.create("RightAbsentPos", "TopPos", 10L),
+                DataPoint.create("RightAbsentPos", "TopNeg", 10L),
+
+                DataPoint.create("LeftMissingNeg", "Left", null),
+                DataPoint.create("LeftMissingNeg", "Right", -5L),
+                DataPoint.create("LeftMissingNeg", "TopPos", -5L),
+                DataPoint.create("LeftMissingNeg", "TopNeg", 5L),
+
+                DataPoint.create("LeftMissingPos", "Left", null),
+                DataPoint.create("LeftMissingPos", "Right", 5L),
+                DataPoint.create("LeftMissingPos", "TopPos", 5L),
+                DataPoint.create("LeftMissingPos", "TopNeg", -5L),
+
+                DataPoint.create("RightMissingNeg", "Left", -10L),
+                DataPoint.create("RightMissingNeg", "Right", null),
+                DataPoint.create("RightMissingNeg", "TopPos", -10L),
+                DataPoint.create("RightMissingNeg", "TopNeg", 10L),
+
+                DataPoint.create("RightMissingPos", "Left", 10L),
+                DataPoint.create("RightMissingPos", "Right", null),
+                DataPoint.create("RightMissingPos", "TopPos", 10L),
+                DataPoint.create("RightMissingPos", "TopNeg", -10L),
+
+                DataPoint.create("LeftNeg", "Left", -10L),
+                DataPoint.create("LeftNeg", "Right", 5L),
+                DataPoint.create("LeftNeg", "TopPos", -5L),
+                DataPoint.create("LeftNeg", "TopNeg", 5L),
+
+                DataPoint.create("RightNeg", "Left", 10L),
+                DataPoint.create("RightNeg", "Right", -5L),
+                DataPoint.create("RightNeg", "TopPos", 5L),
+                DataPoint.create("RightNeg", "TopNeg", -5L),
+
+                DataPoint.create("LeftZeroNeg", "Left", 0L),
+                DataPoint.create("LeftZeroNeg", "Right", -5L),
+                DataPoint.create("LeftZeroNeg", "TopPos", -5L),
+                DataPoint.create("LeftZeroNeg", "TopNeg", 5L),
+
+                DataPoint.create("LeftZeroPos", "Left", 0L),
+                DataPoint.create("LeftZeroPos", "Right", 5L),
+                DataPoint.create("LeftZeroPos", "TopPos", 5L),
+                DataPoint.create("LeftZeroPos", "TopNeg", -5L),
+
+                DataPoint.create("RightZeroNeg", "Left", -10L),
+                DataPoint.create("RightZeroNeg", "Right", 0L),
+                DataPoint.create("RightZeroNeg", "TopPos", -10L),
+                DataPoint.create("RightZeroNeg", "TopNeg", 10L),
+
+                DataPoint.create("RightZeroPos", "Left", 10L),
+                DataPoint.create("RightZeroPos", "Right", 0L),
+                DataPoint.create("RightZeroPos", "TopPos", 10L),
+                DataPoint.create("RightZeroPos", "TopNeg", -10L)
+        );
     }
 
     @Test

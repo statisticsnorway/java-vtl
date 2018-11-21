@@ -4,9 +4,10 @@ site_url: https://statisticsnorway.github.io/java-vtl/
 repo_url: https://github.com/statisticsnorway/java-vtl
 edit_uri: edit/develop/java-vtl-documentation/docs
 
-theme_dir: cinder
-pages:
-- Home: index.md
+theme: 
+  name: null
+  custom_dir: cinder/
+nav:
 - Reference: reference.md
 - Playground: playground.md
 

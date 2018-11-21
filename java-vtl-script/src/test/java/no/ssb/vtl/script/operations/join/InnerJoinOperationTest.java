@@ -104,20 +104,6 @@ public class InnerJoinOperationTest extends RandomizedTest {
     }
 
     @Test
-    public void testGerMergerReturnsNull() {
-        // getMerger()  is deprecated.
-        StaticDataset ds1 = StaticDataset.create().addComponent("id", IDENTIFIER, String.class).build();
-        StaticDataset ds2 = StaticDataset.create().addComponent("id", IDENTIFIER, String.class).build();
-
-        InnerJoinOperation joinOperation = new InnerJoinOperation(
-                ImmutableMap.of(
-                        "ds1", ds1, "ds2", ds2
-                ), Collections.emptySet()
-        );
-        assertThat(joinOperation.getMerger(ds1, ds2)).isNull();
-    }
-
-    @Test
     public void testIncompatibleOrder() {
         StaticDataset ds1 = StaticDataset.create()
                 .addComponent("id1", IDENTIFIER, String.class)

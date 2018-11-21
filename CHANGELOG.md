@@ -4,19 +4,30 @@
 
 ### Added
 
-* Add support for experimental foreach operator (#96)
-* Throw ContextualRuntimeException in user function visitor 
+### Changed
+
+## 0.1.12 - 2018-11-21
 
 ### Changed
 
-* Add support for escaped variable names
+* Update outdated dependencies
+* Remove hamcrest dependencies
+* Hierarchy operator handles null values in complement relations
+* Fix a bug in outer join expression with more than two datasets
+
+## 0.1.11 - 2018-10-23
+
+### Added
+
+* Experimental foreach operator (#96)
+* Supports escaped variable names
+* Throw ContextualRuntimeException in user function visitor 
 
 ## 0.1.10-3 - 2018-09-19
 
 ### Changed
 
 * Fix a bug in InnerJoinOperation when requested order does not include all the identifiers
-
 
 ## 0.1.10-2 - 2018-09-04
 

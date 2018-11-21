@@ -20,11 +20,9 @@ package no.ssb.vtl.script.operations.join;
  * =========================LICENSE_END==================================
  */
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
-import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Order;
 import no.ssb.vtl.script.support.Closer;
@@ -35,7 +33,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -55,40 +52,6 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                     getDataStructure().getName(component),
                     component
             );
-        }
-    }
-
-    @Override
-    protected BiFunction<DataPoint, DataPoint, DataPoint> getMerger(Dataset leftDataset, Dataset rightDataset) {
-        return null;
-    }
-
-    /**
-     * Convert the {@link Order} so it uses the given structure.
-     */
-    private Order adjustOrderForStructure(Order orders, DataStructure dataStructure) {
-
-        DataStructure structure = getDataStructure();
-        Order.Builder adjustedOrders = Order.create(dataStructure);
-
-        // Uses names since child structure can be different.
-        for (Component component : orders.keySet()) {
-            String name = structure.getName(component);
-            if (dataStructure.containsKey(name))
-                adjustedOrders.put(name, orders.get(component));
-        }
-        return adjustedOrders.build();
-    }
-
-    /**
-     * TODO: Move to the {@link no.ssb.vtl.model.AbstractDatasetOperation}.
-     */
-    private Stream<DataPoint> getOrSortData(Dataset dataset, Order order, Dataset.Filtering filtering, Set<String> components) {
-        Optional<Stream<DataPoint>> sortedData = dataset.getData(order, filtering, components);
-        if (sortedData.isPresent()) {
-            return sortedData.get();
-        } else {
-            return dataset.getData().sorted(order).filter(filtering);
         }
     }
 
@@ -123,7 +86,6 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                     components
             ).peek(new DataPointCapacityExpander(getDataStructure().size()));
             closer.register(result);
-
 
 
             boolean first = true;
@@ -177,51 +139,6 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                 ex.addSuppressed(ioe);
             }
             throw ex;
-        }
-    }
-
-    /**
-     * Compute the predicate.
-     *
-     * @param requestedOrder the requested order.
-     * @return order of the common identifiers only.
-     */
-    private Order computePredicate(Order requestedOrder) {
-        DataStructure structure = getDataStructure();
-
-        // We need to create a fake structure to allow the returned
-        // Order to work with the result of the key extractors.
-
-        ImmutableSet<Component> commonIdentifiers = getCommonIdentifiers();
-        DataStructure.Builder fakeStructure = DataStructure.builder();
-        for (Component component : commonIdentifiers) {
-            fakeStructure.put(structure.getName(component), component);
-        }
-
-        Order.Builder predicateBuilder = Order.create(fakeStructure.build());
-        for (Component component : commonIdentifiers) {
-            predicateBuilder.put(component, requestedOrder.getOrDefault(component, Order.Direction.ASC));
-        }
-        return predicateBuilder.build();
-    }
-
-    @Override
-    public Optional<Map<String, Integer>> getDistinctValuesCount() {
-        if (getChildren().size() == 1) {
-            return getChildren().get(0).getDistinctValuesCount();
-        } else {
-            // TODO
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Optional<Long> getSize() {
-        if (getChildren().size() == 1) {
-            return getChildren().get(0).getSize();
-        } else {
-            // TODO
-            return Optional.empty();
         }
     }
 }

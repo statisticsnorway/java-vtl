@@ -41,9 +41,8 @@ import static no.ssb.vtl.script.operations.check.CheckSingleRuleOperation.CONDIT
 import static no.ssb.vtl.script.operations.check.CheckSingleRuleOperation.ERROR_CODE_LABEL;
 import static no.ssb.vtl.script.operations.check.CheckSingleRuleOperation.ERROR_LEVEL_LABEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -54,9 +53,9 @@ public class CheckSingleRuleOperationTest {
 
     @Test
     public void testArgumentDataset() throws Exception {
-        thrown.expect(NullPointerException.class);
-        thrown.expect(hasProperty("message", containsString("dataset was null")));
-        new CheckSingleRuleOperation.Builder(null).build();
+        assertThatThrownBy(() -> new CheckSingleRuleOperation.Builder(null).build())
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("dataset was null");
     }
 
     /**
@@ -66,12 +65,13 @@ public class CheckSingleRuleOperationTest {
      */
     @Test
     public void testArgumentAllAndMeasuresToReturn() throws Exception {
-        thrown.expect(IllegalArgumentException.class);
-        thrown.expect(hasProperty("message", containsString("cannot use 'all' with 'measures'")));
-        new CheckSingleRuleOperation.Builder(mock(Dataset.class))
+        assertThatThrownBy(() ->
+            new CheckSingleRuleOperation.Builder(mock(Dataset.class))
                 .rowsToReturn(CheckSingleRuleOperation.RowsToReturn.ALL)
                 .componentsToReturn(CheckSingleRuleOperation.ComponentsToReturn.MEASURES)
-                .build();
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot use 'all' with 'measures'");
     }
 
     /**
