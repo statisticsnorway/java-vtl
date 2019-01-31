@@ -125,7 +125,7 @@ public class InnerJoinOperationTest extends RandomizedTest {
         InnerJoinOperation joinOperation = new InnerJoinOperation(
                 ImmutableMap.of(
                         "ds1", ds1, "ds2", ds2
-                ), Collections.emptySet()
+                ), Collections.emptyMap()
         );
 
         // This order is not possible.

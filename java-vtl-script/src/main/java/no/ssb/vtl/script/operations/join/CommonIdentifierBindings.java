@@ -36,10 +36,9 @@ public class CommonIdentifierBindings extends ComponentBindings {
 
     public CommonIdentifierBindings(Map<String, Dataset> namedDatasets) {
         List<ComponentBindings> bindingsList = Lists.newArrayList();
-        for (String datasetName : namedDatasets.keySet()) {
-            ComponentBindings componentBindings = new ComponentBindings(namedDatasets.get(datasetName));
+        for (Map.Entry<String, Dataset> entry : namedDatasets.entrySet()) {
+            ComponentBindings componentBindings = new ComponentBindings(entry.getValue());
             bindingsList.add(componentBindings);
-            this.put(datasetName, componentBindings);
         }
         Set<String> commonIdentifiers = null;
         for (ComponentBindings componentBindings : bindingsList) {

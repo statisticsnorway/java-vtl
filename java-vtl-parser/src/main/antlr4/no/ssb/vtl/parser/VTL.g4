@@ -236,7 +236,8 @@ unionExpression : 'union' '(' datasetExpression (',' datasetExpression )* ')' ;
 
 joinExpression : '[' joinDefinition ']' '{' joinBody '}';
 
-joinDefinition : type=( INNER | OUTER | CROSS )? variable (',' variable )* ( 'on' variableExpression (',' variableExpression )* )? ;
+joinDefinition : type=( INNER | OUTER | CROSS )? datasets=joinDefinitionVariables ( 'on' identifiers=joinDefinitionVariables)? ;
+joinDefinitionVariables : variable (',' variable )* ;
 
 joinBody : joinClause (',' joinClause)* ;
 

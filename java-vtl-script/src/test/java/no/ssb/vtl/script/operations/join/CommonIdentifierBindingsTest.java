@@ -47,7 +47,7 @@ public class CommonIdentifierBindingsTest {
                 "t1", t1
         ));
 
-        assertThat(result).containsOnlyKeys("id1", "id2", "uni1", "t1");
+        assertThat(result).containsOnlyKeys("id1", "id2", "uni1");
         assertThat(result.getComponentReferences()).containsOnlyKeys("id1", "id2", "uni1");
 
     }
@@ -85,14 +85,10 @@ public class CommonIdentifierBindingsTest {
                 "t3", t3
         ));
 
-        assertThat(result).containsOnlyKeys("id1", "id2", "t1", "t2", "t3");
+        assertThat(result).containsOnlyKeys("id1", "id2");
         assertThat(result.getComponentReferences()).containsOnlyKeys("id1", "id2");
 
         assertThat(result.get("id1")).isInstanceOf(VTLTyped.class);
         assertThat(result.get("id2")).isInstanceOf(VTLTyped.class);
-
-        assertThat(result.get("t1")).isInstanceOf(ComponentBindings.class);
-        assertThat(result.get("t2")).isInstanceOf(ComponentBindings.class);
-        assertThat(result.get("t3")).isInstanceOf(ComponentBindings.class);
     }
 }

@@ -66,6 +66,8 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     private static final String ERROR_EMPTY_DATASET_LIST = "join operation impossible on empty dataset list";
     private static final String ERROR_INCOMPATIBLE_TYPES = "incompatible identifier types: %s";
     private static final String ERROR_NO_COMMON_IDENTIFIERS = "could not find common identifiers in the datasets %s";
+    private static final String ERROR_NOT_IN_COMMON_IDENTIFIERS = "join operation has identifiers %s in the 'on' "
+            + "clause that is not a common identifier in the datasets %s";
     protected final ImmutableMap<String, Dataset> datasets;
     private final ImmutableMap<String, Component> commonIdentifiers;
     // Contains name mappings for all datasets
@@ -73,7 +75,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
 
     private final ComponentBindings joinScope;
 
-    AbstractJoinOperation(Map<String, Dataset> namedDatasets, Set<Component> identifiers) {
+    AbstractJoinOperation(Map<String, Dataset> namedDatasets, Map<String, Component> identifiers) {
         super(Lists.newArrayList(checkNotNull(namedDatasets).values()));
 
         checkArgument(
@@ -86,11 +88,17 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
 
         this.commonIdentifiers = ImmutableMap.copyOf(new CommonIdentifierBindings(this.datasets)
                 .getComponentReferences().entrySet().stream()
-                .filter(entry -> identifiers.isEmpty() || identifiers.contains(entry.getValue()))
+                .filter(entry -> identifiers.isEmpty() || identifiers.values().contains(entry.getValue()))
                 .collect(Collectors.toSet()));
 
-        // No common identifier
-        checkArgument(namedDatasets.size() == 1 || !commonIdentifiers.isEmpty(), ERROR_NO_COMMON_IDENTIFIERS, namedDatasets);
+        // Check for common identifiers
+        if(namedDatasets.size() > 1 && commonIdentifiers.isEmpty()) {
+            if (identifiers.isEmpty()) {
+                throw new IllegalStateException(String.format(ERROR_NO_COMMON_IDENTIFIERS, namedDatasets));
+            } else {
+                throw new IllegalStateException(String.format(ERROR_NOT_IN_COMMON_IDENTIFIERS, identifiers, namedDatasets));
+            }
+        }
 
 
         // Type mismatch check

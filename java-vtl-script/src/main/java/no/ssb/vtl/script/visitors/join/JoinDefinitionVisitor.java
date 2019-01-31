@@ -21,7 +21,6 @@ package no.ssb.vtl.script.visitors.join;
  */
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
@@ -65,13 +64,13 @@ public class JoinDefinitionVisitor extends VTLDatasetExpressionVisitor<AbstractJ
         return builder.build();
     }
 
-    private ImmutableSet<Component> extractIdentifierComponents(List<VTLParser.VariableExpressionContext> identifiers,
+    private ImmutableMap<String, Component> extractIdentifierComponents(List<VTLParser.VariableContext> identifiers,
                                                                 ImmutableMap<String, Dataset> datasets) {
-        ImmutableSet.Builder<Component> builder = ImmutableSet.builder();
+        ImmutableMap.Builder<String, Component> builder = ImmutableMap.builder();
         ComponentVisitor componentVisitor = new ComponentVisitor(new CommonIdentifierBindings(datasets));
-        for (VTLParser.VariableExpressionContext identifier : identifiers) {
+        for (VTLParser.VariableContext identifier : identifiers) {
             Component identifierComponent = componentVisitor.visit(identifier);
-            builder.add(identifierComponent);
+            builder.put(identifier.getText(), identifierComponent);
         }
         return builder.build();
     }
@@ -80,9 +79,11 @@ public class JoinDefinitionVisitor extends VTLDatasetExpressionVisitor<AbstractJ
     public AbstractJoinOperation visitJoinDefinition(VTLParser.JoinDefinitionContext ctx) {
 
         // Create a component bindings to be able to resolve components.
-        ImmutableMap<String, Dataset> datasets = extractDatasets(ctx.variable());
+        ImmutableMap<String, Dataset> datasets = extractDatasets(ctx.datasets.variable());
 
-        ImmutableSet<Component> identifiers = extractIdentifierComponents(ctx.variableExpression(), datasets);
+        ImmutableMap<String, Component> identifiers = ctx.identifiers == null
+                ? ImmutableMap.of()
+                : extractIdentifierComponents(ctx.identifiers.variable(), datasets);
 
         Integer joinType = Optional.ofNullable(ctx.type).map(Token::getType).orElse(VTLParser.INNER);
         switch (joinType) {

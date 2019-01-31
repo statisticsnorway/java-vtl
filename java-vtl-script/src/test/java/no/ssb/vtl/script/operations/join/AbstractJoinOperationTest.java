@@ -40,7 +40,6 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -281,13 +280,13 @@ public class AbstractJoinOperationTest {
 
         new TestAbstractJoinOperation(
                 ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                ImmutableSet.of(s1.get("id1"))
+                ImmutableMap.of("id1", s1.get("id1"))
         );
 
         assertThatThrownBy(() -> {
             new TestAbstractJoinOperation(
                     ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                    ImmutableSet.of(s1.get("id2"))
+                    ImmutableMap.of("id2", s1.get("id2"))
             );
         }).isNotNull().hasMessageContaining("types");
     }
@@ -353,10 +352,7 @@ public class AbstractJoinOperationTest {
 
     }
 
-    // TODO(hk): Operating on the same dataset is still problematic.
-    // We are closer to stop using Component as positions key in datapoints.
-    // We just need to use the column mapping instead of the component mapping
-    // @Test
+    @Test
     public void testSameDatasetShouldNotFail() throws Exception {
 
         Dataset ds1 = mock(Dataset.class);
@@ -463,14 +459,38 @@ public class AbstractJoinOperationTest {
         when(ds2.getDataStructure()).thenReturn(s2);
 
         TestAbstractJoinOperation joinOperation = new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                new HashSet<>());
+                Collections.emptyMap());
         assertThat(joinOperation.getCommonIdentifiers().values())
                 .containsExactlyInAnyOrder(s1.get("id1"), s1.get("id2"));
 
         joinOperation = new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                ImmutableSet.of(s1.get("id1")));
+                ImmutableMap.of("id1", s1.get("id1")));
         assertThat(joinOperation.getCommonIdentifiers().values())
                 .containsExactlyInAnyOrder(s1.get("id1"));
+    }
+
+    @Test
+    public void testJoinOnIdentifierThatIsNotCommon() {
+
+        Dataset ds1 = mock(Dataset.class);
+        DataStructure s1 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("id2", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .build();
+        when(ds1.getDataStructure()).thenReturn(s1);
+
+        Dataset ds2 = mock(Dataset.class);
+        DataStructure s2 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .build();
+        when(ds2.getDataStructure()).thenReturn(s2);
+
+        assertThatThrownBy(() ->
+            new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
+                    ImmutableMap.of("id2", s1.get("id2")))
+        ).isNotNull().hasMessageContaining("join operation").hasMessageContaining("not a common identifier");
     }
 
     private static class TestAbstractJoinOperation extends AbstractJoinOperation {
@@ -481,10 +501,10 @@ public class AbstractJoinOperationTest {
 
 
         public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets) {
-            super(namedDatasets, Collections.emptySet());
+            super(namedDatasets, Collections.emptyMap());
         }
 
-        public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets, Set<Component> identifiers) {
+        public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets, Map<String, Component> identifiers) {
             super(namedDatasets, identifiers);
         }
 
