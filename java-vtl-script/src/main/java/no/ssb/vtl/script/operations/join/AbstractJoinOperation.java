@@ -66,7 +66,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     private static final String ERROR_EMPTY_DATASET_LIST = "join operation impossible on empty dataset list";
     private static final String ERROR_INCOMPATIBLE_TYPES = "incompatible identifier types: %s";
     private static final String ERROR_NO_COMMON_IDENTIFIERS = "could not find common identifiers in the datasets %s";
-    private static final String ERROR_NO_COMMON_IDENTIFIERS_WITH_JOIN = "join operation has identifiers %s in the 'on' "
+    private static final String ERROR_NOT_IN_COMMON_IDENTIFIERS = "join operation has identifiers %s in the 'on' "
             + "clause that is not a common identifier in the datasets %s";
     protected final ImmutableMap<String, Dataset> datasets;
     private final ImmutableMap<String, Component> commonIdentifiers;
@@ -92,12 +92,12 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
                 .collect(Collectors.toSet()));
 
         // Check for common identifiers
-        if(namedDatasets.size() > 1 && commonIdentifiers.isEmpty() && identifiers.isEmpty()) {
-            throw new IllegalStateException(String.format(ERROR_NO_COMMON_IDENTIFIERS, namedDatasets));
-        }
-        if(namedDatasets.size() > 1 && commonIdentifiers.isEmpty() && !identifiers.isEmpty()) {
-            throw new IllegalStateException(String.format(ERROR_NO_COMMON_IDENTIFIERS_WITH_JOIN, identifiers,
-                    namedDatasets));
+        if(namedDatasets.size() > 1 && commonIdentifiers.isEmpty()) {
+            if (identifiers.isEmpty()) {
+                throw new IllegalStateException(String.format(ERROR_NO_COMMON_IDENTIFIERS, namedDatasets));
+            } else {
+                throw new IllegalStateException(String.format(ERROR_NOT_IN_COMMON_IDENTIFIERS, identifiers, namedDatasets));
+            }
         }
 
 
