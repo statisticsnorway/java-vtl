@@ -71,10 +71,10 @@ import java.util.stream.StreamSupport;
 public class OuterJoinOperation extends AbstractJoinOperation {
 
     public OuterJoinOperation(Map<String, Dataset> namedDatasets) {
-        this(namedDatasets, Collections.emptySet());
+        this(namedDatasets, Collections.emptyMap());
     }
 
-    public OuterJoinOperation(Map<String, Dataset> namedDatasets, Set<Component> identifiers) {
+    public OuterJoinOperation(Map<String, Dataset> namedDatasets, Map<String, Component> identifiers) {
         super(namedDatasets, identifiers);
     }
 

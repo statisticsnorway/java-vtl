@@ -87,9 +87,9 @@ public class ForeachOperationTest {
                     "t1", t1.get(),
                     "t2", t2.get()
             );
-            ImmutableSet<Component> identifier = ImmutableSet.of(
-                    t1.get().getDataStructure().get("year"),
-                    t1.get().getDataStructure().get("id")
+            ImmutableMap<String, Component> identifier = ImmutableMap.of(
+                    "t1.year", t1.get().getDataStructure().get("year"),
+                    "t1.id", t1.get().getDataStructure().get("id")
             );
             return VTLDataset.of(new InnerJoinOperation(namedDataset, identifier));
         });

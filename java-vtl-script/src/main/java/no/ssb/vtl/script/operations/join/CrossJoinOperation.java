@@ -52,10 +52,10 @@ import java.util.Set;
 public abstract class CrossJoinOperation extends OuterJoinOperation {
 
     CrossJoinOperation(Map<String, Dataset> namedDatasets) {
-        super(namedDatasets, Collections.emptySet());
+        super(namedDatasets, Collections.emptyMap());
     }
 
-    public CrossJoinOperation(Map<String, Dataset> namedDatasets, Set<Component> identifiers) {
+    public CrossJoinOperation(Map<String, Dataset> namedDatasets, Map<String, Component> identifiers) {
         super(namedDatasets, identifiers);
     }
 }
