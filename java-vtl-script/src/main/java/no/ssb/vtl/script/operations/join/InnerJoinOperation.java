@@ -62,9 +62,9 @@ public class InnerJoinOperation extends AbstractJoinOperation {
         Ordering predicate = computePredicate(requiredOrder);
 
         // TODO: Use abstract operation here.
-        Iterator<Dataset> iterator = datasets.values().iterator();
-        Dataset left = iterator.next();
-        Dataset right = left;
+        Iterator<Map.Entry<String, Dataset>> iterator = datasets.entrySet().iterator();
+        Map.Entry<String, Dataset> left = iterator.next();
+        Map.Entry<String, Dataset> right = left;
 
         ImmutableList.Builder<Stream<DataPoint>> originals = ImmutableList.builder();
 
@@ -72,9 +72,9 @@ public class InnerJoinOperation extends AbstractJoinOperation {
         try {
 
             Stream<DataPoint> original = getOrSortData(
-                    left,
-                    adjustOrderForStructure(requiredOrder, left.getDataStructure()),
-                    filtering, // TODO: Rename columns in the filter.
+                    left.getValue(),
+                    adjustOrderForStructure(requiredOrder, left.getValue().getDataStructure()),
+                    renameFilterColumns(filtering, left.getKey()),
                     components
             );
             originals.add(original);
@@ -88,9 +88,9 @@ public class InnerJoinOperation extends AbstractJoinOperation {
                 right = iterator.next();
 
                 Stream<DataPoint> rightStream = getOrSortData(
-                        right,
-                        adjustOrderForStructure(requiredOrder, right.getDataStructure()),
-                        filtering,
+                        right.getValue(),
+                        adjustOrderForStructure(requiredOrder, right.getValue().getDataStructure()),
+                        renameFilterColumns(filtering, right.getKey()),
                         components
                 );
                 originals.add(rightStream);
@@ -102,10 +102,11 @@ public class InnerJoinOperation extends AbstractJoinOperation {
 
                 result = StreamSupport.stream(
                         new InnerJoinSpliterator<>(
-                                new JoinKeyExtractor(first ? left.getDataStructure() : getDataStructure(), predicate),
-                                new JoinKeyExtractor(right.getDataStructure(), predicate),
+                                new JoinKeyExtractor(first ? left.getValue().getDataStructure() : getDataStructure(),
+                                        predicate),
+                                new JoinKeyExtractor(right.getValue().getDataStructure(), predicate),
                                 predicate,
-                                new InnerJoinMerger(getDataStructure(), right.getDataStructure()),
+                                new InnerJoinMerger(getDataStructure(), right.getValue().getDataStructure()),
                                 result.spliterator(),
                                 rightStream.spliterator()
                         ), false
