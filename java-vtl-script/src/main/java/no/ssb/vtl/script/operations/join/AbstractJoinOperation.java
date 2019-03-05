@@ -358,7 +358,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     }
 
     protected Stream<DataPoint> getOrSortData(Dataset dataset, Ordering order, Filtering filtering, Set<String> components) {
-        VtlFiltering vtlFiltering = VtlFiltering.using(dataset).transpose(filtering);
+        VtlFiltering vtlFiltering = computeDatasetFiltering(dataset, filtering);
         // TODO: Refactor to use AbstractOperation directly.
         if (dataset instanceof AbstractDatasetOperation) {
             return ((AbstractDatasetOperation) dataset).computeData(new VtlOrdering(order, dataset.getDataStructure()), vtlFiltering, components);
@@ -372,6 +372,11 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
                 //return dataset.getData().sorted(order).filter(filtering);
             }
         }
+    }
+
+    @VisibleForTesting
+    VtlFiltering computeDatasetFiltering(Dataset dataset, Filtering filtering) {
+        return VtlFiltering.using(dataset).transpose(filtering);
     }
 
     /**
@@ -405,12 +410,12 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
             return VtlFiltering.nary(negated, operator, operands);
         } else {
             Map<String, String> columnMap = columnMapping.column(datasetKey);
-            return VtlFiltering.literal(
-                    negated,
-                    operator,
+                return VtlFiltering.literal(
+                        negated,
+                        operator,
                     columnMap.getOrDefault(filtering.getColumn(), filtering.getColumn()),
-                    filtering.getValue()
-            );
+                        filtering.getValue()
+                );
         }
     }
 
