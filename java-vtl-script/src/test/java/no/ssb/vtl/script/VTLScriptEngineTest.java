@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static no.ssb.vtl.model.Component.Role;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1149,7 +1150,8 @@ public class VTLScriptEngineTest {
                         "ds4 := [ds3]{" +
                         "filter at1 = \"attr1-2\"" +
                         " or m1 = 10" +
-                        "}");
+                        "}" +
+                        "");
 
         assertThat(bindings).containsKey("ds3");
         assertThat(bindings).containsKey("ds4");
@@ -1158,7 +1160,7 @@ public class VTLScriptEngineTest {
 
         Dataset ds3 = (Dataset) bindings.get("ds3");
         assertThat(ds3.getDataStructure())
-                .describedAs("data structure of d4")
+                .describedAs("data structure of d3")
                 .containsOnlyKeys(
                         "id1",
                         "m1",
@@ -1175,8 +1177,8 @@ public class VTLScriptEngineTest {
                         "m2",
                         "at1"
                 );
-
-        assertThat(ds3.getData())
+        Stream<DataPoint> data = ds3.getData();
+        assertThat(data)
                 .containsExactlyInAnyOrder(
                         DataPoint.create("1", 10L, 20D, null),
                         DataPoint.create("2", 100L, 200D, null),

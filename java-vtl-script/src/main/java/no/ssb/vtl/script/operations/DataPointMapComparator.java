@@ -31,21 +31,21 @@ public class DataPointMapComparator implements Comparator<DataPointMap> {
 
     private final VtlOrdering vtlOrdering;
 
+    @SuppressWarnings("unchecked")
+    private final static Comparator<VTLObject> vtlObjectComparator = Comparator.comparing((VTLObject object) ->
+            (Comparable) object.get(), Comparator.nullsLast(Comparator.naturalOrder()));
+
     public DataPointMapComparator(VtlOrdering vtlOrdering) {
         this.vtlOrdering = vtlOrdering;
     }
 
     @Override
     public int compare(DataPointMap o1, DataPointMap o2) {
-        @SuppressWarnings("unchecked")
-        Comparator<VTLObject> vtlObjectComparator = Comparator.comparing((VTLObject object) ->
-                        (Comparable) object.get(), Comparator.nullsLast(Comparator.naturalOrder()));
         int result = 0;
         for (String column : vtlOrdering.columns()) {
-            Ordering.Direction direction = vtlOrdering.getDirection(column);
             result = vtlObjectComparator.compare(o1.get(column), o2.get(column));
             if (result != 0) {
-                return direction == Ordering.Direction.ASC ? result : -result;
+                return vtlOrdering.getDirection(column) == Ordering.Direction.ASC ? result : -result;
             }
         }
         return result;

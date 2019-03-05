@@ -180,19 +180,8 @@ public class UnionOperation extends AbstractDatasetOperation {
         ImmutableList.Builder<Stream<DataPoint>> originals = ImmutableList.builder();
         for (AbstractDatasetOperation child : getChildren()) {
 
-            DataStructure childStructure = getNormalizedChildStructure(child.getDataStructure(), structure);
-            VtlOrdering unionOrdering = new VtlOrdering(unionOrder, childStructure);
-            VtlFiltering unionFilter = VtlFiltering.using(child).transpose(childFiltering);
-
-            Stream<DataPoint> stream = child.computeData(unionOrdering, unionFilter, components)
-                    .peek(
-                            new DataPointCapacityExpander(structure.size()));
-
-            originals.add(stream);
-            Stream<DataPoint> testStream = StreamSupport.stream(stream.spliterator(), false);
-
-            DataPointMap map = new DataPointMap(childStructure);
-            Stream<DataPointMap> dataPointMapStream = testStream.map(map::withDataPoint);
+            Stream<DataPointMap> dataPointMapStream = getChildDataStream(
+                    components, childFiltering, unionOrder, structure, originals, child);
             streams.add(dataPointMapStream);
         }
 
@@ -212,6 +201,21 @@ public class UnionOperation extends AbstractDatasetOperation {
 
         return new VtlStream(
                 this, result, originals.build(), ordering, filtering, unionOrdering, childFiltering);
+    }
+
+    private Stream<DataPointMap> getChildDataStream(Set<String> components, VtlFiltering childFiltering, VtlOrdering unionOrder, DataStructure structure, ImmutableList.Builder<Stream<DataPoint>> originals, AbstractDatasetOperation child) {
+        DataStructure childStructure = getNormalizedChildStructure(child.getDataStructure(), structure);
+        VtlOrdering unionOrdering = new VtlOrdering(unionOrder, childStructure);
+        VtlFiltering unionFilter = VtlFiltering.using(child).transpose(childFiltering);
+
+        Stream<DataPoint> stream = child.computeData(unionOrdering, unionFilter, components)
+                .peek(new DataPointCapacityExpander(structure.size()));
+
+        originals.add(stream);
+
+        DataPointMap map = new DataPointMap(childStructure);
+
+        return StreamSupport.stream(stream.spliterator(), false).map(map::withDataPoint);
     }
 
     /**
@@ -236,7 +240,7 @@ public class UnionOperation extends AbstractDatasetOperation {
                         .map(Entry::getKey).noneMatch(key -> key.equals(entry.getKey())))
                 .collect(Collectors.toList()));
 
-        return DataStructure.builder().putAll(childStructureList).build();
+        return builder().putAll(childStructureList).build();
     }
 
     private <T> Selector<T> createSelector(Comparator<T> comparator) {
