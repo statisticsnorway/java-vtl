@@ -6,6 +6,10 @@
 
 ### Changed
 
+## 0.1.12-1 - 2019-03-05
+
+* Update URLs to internal SSB distribution repos
+
 ## 0.1.12 - 2018-11-21
 
 ### Changed
