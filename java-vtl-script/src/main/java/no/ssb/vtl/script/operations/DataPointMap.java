@@ -61,6 +61,14 @@ public class DataPointMap {
     /**
      * Update the underlying Datapoint value.
      */
+    public DataPointMap withDataPoint(DataPoint dataPoint) {
+        this.dataPoint = dataPoint;
+        return this;
+    }
+
+    /**
+     * Update the underlying Datapoint value.
+     */
     public void setDataPoint(DataPoint dataPoint) {
         this.dataPoint = dataPoint;
     }

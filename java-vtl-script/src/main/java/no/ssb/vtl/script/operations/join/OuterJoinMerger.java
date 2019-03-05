@@ -81,6 +81,11 @@ public class OuterJoinMerger implements BiFunction<DataPoint, DataPoint, DataPoi
         private DataPoint dp = DataPoint.create(0);
 
 
+        /**
+         * Use {@link no.ssb.vtl.script.operations.DataPointMap} (maybe merge)
+         *
+         */
+        @Deprecated
         public DataPointView(DataStructure structure) {
             ImmutableList<String> list = ImmutableSet.copyOf(structure.keySet()).asList();
             this.hash = list::indexOf;

@@ -29,7 +29,6 @@ import com.google.common.collect.Sets;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
-import no.ssb.vtl.model.DatapointNormalizer;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Filtering;
 import no.ssb.vtl.model.FilteringSpecification;
@@ -38,18 +37,26 @@ import no.ssb.vtl.model.OrderingSpecification;
 import no.ssb.vtl.model.VtlFiltering;
 import no.ssb.vtl.model.VtlOrdering;
 import no.ssb.vtl.script.operations.AbstractDatasetOperation;
+import no.ssb.vtl.script.operations.DataPointMap;
+import no.ssb.vtl.script.operations.DataPointMapComparator;
 import no.ssb.vtl.script.operations.VtlStream;
+import no.ssb.vtl.script.operations.join.DataPointCapacityExpander;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Arrays.asList;
+import static no.ssb.vtl.model.DataStructure.Entry;
+import static no.ssb.vtl.model.DataStructure.builder;
 
 /**
  * Union operator
@@ -71,7 +78,29 @@ public class UnionOperation extends AbstractDatasetOperation {
 
     @Override
     protected DataStructure computeDataStructure() {
-        return getChildren().get(0).getDataStructure();
+        if (getChildren().size() == 1) {
+            return getChildren().get(0).getDataStructure();
+        }
+
+        // Get base structure, that is, structure from first parameter, without attributes
+        List<Entry<String, Component>> baseStructure
+                = new ArrayList<>(getChildren().get(0).getDataStructure().entrySet())
+                .stream().filter(entry -> entry.getValue().getRole() != Component.Role.ATTRIBUTE)
+                .collect(Collectors.toList());
+
+        // Add attributes, sorted by name
+        List<Entry<String, Component>> allAttributes = new ArrayList<>();
+        for(Dataset dataset : getChildren()) {
+            List<Entry<String, Component>> childAttributes = dataset.getDataStructure().entrySet()
+                    .stream().filter(entry -> entry.getValue().getRole() == Component.Role.ATTRIBUTE)
+                    .filter(entry -> allAttributes.stream()
+                            .noneMatch(attributeEntry -> attributeEntry.getKey().equals(entry.getKey())))
+                    .collect(Collectors.toList());
+            allAttributes.addAll(childAttributes);
+        }
+        allAttributes.sort(Comparator.comparing(Entry::getKey));
+        baseStructure.addAll(allAttributes);
+        return builder().putAll(baseStructure).build();
     }
 
     @Override
@@ -147,25 +176,71 @@ public class UnionOperation extends AbstractDatasetOperation {
         VtlOrdering unionOrder = (VtlOrdering) computeRequiredOrdering(ordering);
 
         DataStructure structure = getDataStructure();
-        ImmutableList.Builder<Stream<DataPoint>> streams = ImmutableList.builder();
+        ImmutableList.Builder<Stream<DataPointMap>> streams = ImmutableList.builder();
         ImmutableList.Builder<Stream<DataPoint>> originals = ImmutableList.builder();
         for (AbstractDatasetOperation child : getChildren()) {
 
-            VtlOrdering unionOrdering = new VtlOrdering(unionOrder, child.getDataStructure());
-            VtlFiltering unionFilter = VtlFiltering.using(child).with(childFiltering);
-
-            Stream<DataPoint> stream = child.computeData(unionOrdering, unionFilter, components);
-            originals.add(stream);
-            streams.add(stream.map(new DatapointNormalizer(child.getDataStructure(), structure)));
+            Stream<DataPointMap> dataPointMapStream = getChildDataStream(
+                    components, childFiltering, unionOrder, structure, originals, child);
+            streams.add(dataPointMapStream);
         }
 
         VtlOrdering unionOrdering = new VtlOrdering(unionOrder, structure);
+        Comparator<DataPointMap> comparing = new DataPointMapComparator(unionOrdering);
+
+        ImmutableList<Stream<DataPointMap>> build = streams.build();
+
+        DataPointMap resultMap = new DataPointMap(structure);
         Stream<DataPoint> result = StreamUtils.interleave(
-                createSelector(unionOrdering), streams.build()
-        ).map(new DuplicateChecker(unionOrdering, structure));
+                createSelector(comparing), build)
+                .map(source -> {
+                    resultMap.setDataPoint(DataPoint.create(structure.size()));
+                    structure.keySet().forEach(col -> resultMap.set(col, source.get(col)));
+                    return resultMap.getDataPoint();
+                }).map(new DuplicateChecker(unionOrdering, structure));
 
         return new VtlStream(
                 this, result, originals.build(), ordering, filtering, unionOrdering, childFiltering);
+    }
+
+    private Stream<DataPointMap> getChildDataStream(Set<String> components, VtlFiltering childFiltering, VtlOrdering unionOrder, DataStructure structure, ImmutableList.Builder<Stream<DataPoint>> originals, AbstractDatasetOperation child) {
+        DataStructure childStructure = getNormalizedChildStructure(child.getDataStructure(), structure);
+        VtlOrdering unionOrdering = new VtlOrdering(unionOrder, childStructure);
+        VtlFiltering unionFilter = VtlFiltering.using(child).transpose(childFiltering);
+
+        Stream<DataPoint> stream = child.computeData(unionOrdering, unionFilter, components)
+                .peek(new DataPointCapacityExpander(structure.size()));
+
+        originals.add(stream);
+
+        DataPointMap map = new DataPointMap(childStructure);
+
+        return StreamSupport.stream(stream.spliterator(), false).map(map::withDataPoint);
+    }
+
+    /**
+     * Concatenates the child's structure with the base structure, to add attributes not present in child
+     *
+     * @param childStructure the child's structure
+     * @param baseStructure the base structure for the expression, containing the sum of all attributes from all
+     *                      parameters
+     * @return the concatenated structure
+     */
+    private DataStructure getNormalizedChildStructure(DataStructure childStructure, DataStructure baseStructure) {
+        if (childStructure.getRoles().size() == baseStructure.getRoles().size()
+                && childStructure.getRoles().keySet().equals(baseStructure.getRoles().keySet())) {
+            return childStructure;
+        }
+
+        List<Entry<String, Component>> childStructureList = new ArrayList<>(childStructure.entrySet());
+
+        // append missing attributes from baseStructure
+        childStructureList.addAll(baseStructure.entrySet().stream()
+                .filter(entry -> childStructureList.stream()
+                        .map(Entry::getKey).noneMatch(key -> key.equals(entry.getKey())))
+                .collect(Collectors.toList()));
+
+        return builder().putAll(childStructureList).build();
     }
 
     private <T> Selector<T> createSelector(Comparator<T> comparator) {
