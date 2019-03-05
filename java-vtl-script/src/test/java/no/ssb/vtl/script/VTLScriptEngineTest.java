@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static no.ssb.vtl.model.Component.Role;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1117,6 +1118,200 @@ public class VTLScriptEngineTest {
                         "2", 100L, 200D, "attr1-2",
                         "3", 30L, 40D, "attr2-1",
                         "4", 300L, 400D, "attr2-2"
+                );
+    }
+
+    @Test
+    public void testUnionWithFilter() throws Exception {
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("m1", Role.MEASURE, Long.class)
+                .addComponent("m2", Role.MEASURE, Double.class)
+
+                .addPoints("1", 10L, 20D)
+                .addPoints("2", 100L, 200D)
+                .build();
+
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("m1", Role.MEASURE, Long.class)
+                .addComponent("m2", Role.MEASURE, Double.class)
+                .addComponent("at1", Role.ATTRIBUTE, String.class)
+
+                .addPoints("3", 30L, 40D, "attr1-1")
+                .addPoints("4", 300L, 400D, "attr1-2")
+                .build();
+
+        bindings.put("ds1", ds1);
+        bindings.put("ds2", ds2);
+
+        engine.eval(
+                "ds3 := union(ds1, ds2)" +
+                        "ds4 := [ds3]{" +
+                        "filter at1 = \"attr1-2\"" +
+                        " or m1 = 10" +
+                        "}" +
+                        "");
+
+        assertThat(bindings).containsKey("ds3");
+        assertThat(bindings).containsKey("ds4");
+        assertThat(bindings.get("ds3")).isInstanceOf(Dataset.class);
+        assertThat(bindings.get("ds4")).isInstanceOf(Dataset.class);
+
+        Dataset ds3 = (Dataset) bindings.get("ds3");
+        assertThat(ds3.getDataStructure())
+                .describedAs("data structure of d3")
+                .containsOnlyKeys(
+                        "id1",
+                        "m1",
+                        "m2",
+                        "at1"
+                );
+
+        Dataset ds4 = (Dataset) bindings.get("ds4");
+        assertThat(ds4.getDataStructure())
+                .describedAs("data structure of d4")
+                .containsOnlyKeys(
+                        "id1",
+                        "m1",
+                        "m2",
+                        "at1"
+                );
+        Stream<DataPoint> data = ds3.getData();
+        assertThat(data)
+                .containsExactlyInAnyOrder(
+                        DataPoint.create("1", 10L, 20D, null),
+                        DataPoint.create("2", 100L, 200D, null),
+                        DataPoint.create("3", 30L, 40D, "attr1-1"),
+                        DataPoint.create("4", 300L, 400D, "attr1-2")
+                );
+
+        assertThat(ds4.getData())
+                .containsExactlyInAnyOrder(
+                        DataPoint.create("1", 10L, 20D, null),
+                        DataPoint.create("4", 300L, 400D, "attr1-2")
+                );
+    }
+
+    @Test
+    public void testMultipleUnions() throws Exception {
+
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("m1", Role.MEASURE, Long.class)
+                .addComponent("m2", Role.MEASURE, Double.class)
+
+                .addPoints("1", 10L, 20D)
+                .addPoints("2", 100L, 200D)
+                .build();
+
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("m1", Role.MEASURE, Long.class)
+                .addComponent("m2", Role.MEASURE, Double.class)
+                .addComponent("at1", Role.ATTRIBUTE, String.class)
+
+                .addPoints("3", 30L, 40D, "attr1-1")
+                .addPoints("4", 300L, 400D, "attr1-2")
+                .build();
+
+        Dataset ds3 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("m1", Role.MEASURE, Long.class)
+                .addComponent("m2", Role.MEASURE, Double.class)
+                .addComponent("at2", Role.ATTRIBUTE, String.class)
+
+                .addPoints("5", 50L, 60D, "attr2-1")
+                .addPoints("6", 500L, 600D, "attr2-2")
+                .build();
+
+
+        bindings.put("ds1", ds1);
+        bindings.put("ds2", ds2);
+        bindings.put("ds3", ds3);
+
+        engine.eval(
+                "ds4 := union(ds1, ds2, ds3)" +
+                "ds5 := union(ds2, ds3, ds1)" +
+                "ds6 := union(ds3, ds1, ds2)");
+
+        assertThat(bindings).containsKey("ds4");
+        assertThat(bindings).containsKey("ds5");
+        assertThat(bindings).containsKey("ds6");
+        assertThat(bindings.get("ds4")).isInstanceOf(Dataset.class);
+        assertThat(bindings.get("ds5")).isInstanceOf(Dataset.class);
+        assertThat(bindings.get("ds6")).isInstanceOf(Dataset.class);
+
+        Dataset ds4 = (Dataset) bindings.get("ds4");
+        assertThat(ds4.getDataStructure())
+                .describedAs("data structure of d4")
+                .containsOnlyKeys(
+                        "id1",
+                        "m1",
+                        "m2",
+                        "at1",
+                        "at2"
+                );
+
+        Dataset ds5 = (Dataset) bindings.get("ds5");
+        assertThat(ds5.getDataStructure())
+                .describedAs("data structure of ds5")
+                .containsOnlyKeys(
+                        "id1",
+                        "m1",
+                        "m2",
+                        "at1",
+                        "at2"
+                );
+
+        Dataset ds6 = (Dataset) bindings.get("ds6");
+        assertThat(ds6.getDataStructure())
+                .describedAs("data structure of ds6")
+                .containsOnlyKeys(
+                        "id1",
+                        "m1",
+                        "m2",
+                        "at1",
+                        "at2"
+                );
+
+        assertThat(ds4.getData())
+                .containsExactlyInAnyOrder(
+                        DataPoint.create("1", 10L, 20D, null, null),
+                        DataPoint.create("2", 100L, 200D, null, null),
+                        DataPoint.create("3", 30L, 40D, "attr1-1", null),
+                        DataPoint.create("4", 300L, 400D, "attr1-2", null),
+                        DataPoint.create("5", 50L, 60D, null, "attr2-1"),
+                        DataPoint.create("6", 500L, 600D, null, "attr2-2")
+                );
+        assertThat(ds5.getData())
+                .containsExactlyInAnyOrder(
+                        DataPoint.create("1", 10L, 20D, null, null),
+                        DataPoint.create("2", 100L, 200D, null, null),
+                        DataPoint.create("3", 30L, 40D, "attr1-1", null),
+                        DataPoint.create("4", 300L, 400D, "attr1-2", null),
+                        DataPoint.create("5", 50L, 60D, null, "attr2-1"),
+                        DataPoint.create("6", 500L, 600D, null, "attr2-2")
+                );
+        assertThat(ds6.getData())
+                .containsExactlyInAnyOrder(
+                        DataPoint.create("1", 10L, 20D, null, null),
+                        DataPoint.create("2", 100L, 200D, null, null),
+                        DataPoint.create("3", 30L, 40D, "attr1-1", null),
+                        DataPoint.create("4", 300L, 400D, "attr1-2", null),
+                        DataPoint.create("5", 50L, 60D, null, "attr2-1"),
+                        DataPoint.create("6", 500L, 600D, null, "attr2-2")
+                );
+        assertThat(ds6.getData())
+                .flatExtracting(input -> input)
+                .extracting(VTLObject::get)
+                .containsExactly(
+                        "1", 10L, 20D, null, null,
+                        "2", 100L, 200D, null, null,
+                        "3", 30L, 40D, "attr1-1", null,
+                        "4", 300L, 400D, "attr1-2", null,
+                        "5", 50L, 60D, null, "attr2-1",
+                        "6", 500L, 600D, null, "attr2-2"
                 );
     }
 

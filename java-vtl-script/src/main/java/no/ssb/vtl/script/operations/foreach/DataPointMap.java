@@ -33,6 +33,10 @@ import no.ssb.vtl.model.VTLObject;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Use {@link no.ssb.vtl.script.operations.DataPointMap}
+ */
+@Deprecated
 public final class DataPointMap {
 
     private final ImmutableList<String> names;
