@@ -7,7 +7,7 @@
     <groupId>no.ssb.vtl</groupId>
     <artifactId>java-vtl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.12</version>
+    <version>0.1.12-1</version>
 
     <modules>
         <module>java-vtl-model</module>
@@ -100,12 +100,12 @@
                 <repository>
                     <id>releases</id>
                     <name>SSB Nexus Releases</name>
-                    <url>http://kodehus.ssb.no/content/repositories/releases/</url>
+                    <url>https://nexus.ssb.no/repository/maven-releases/</url>
                 </repository>
                 <snapshotRepository>
                     <id>snapshots</id>
                     <name>SSB Snapshot Repository</name>
-                    <url>http://kodehus.ssb.no/content/repositories/snapshots/</url>
+                    <url>https://nexus.ssb.no/repository/maven-snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
         </profile>
