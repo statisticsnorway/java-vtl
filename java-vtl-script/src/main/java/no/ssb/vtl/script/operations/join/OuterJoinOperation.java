@@ -87,9 +87,9 @@ public class OuterJoinOperation extends AbstractJoinOperation {
         Ordering predicate = computePredicate(requiredOrder);
 
         // TODO: Use abstract operation here.
-        Iterator<Dataset> iterator = datasets.values().iterator();
-        Dataset left = iterator.next();
-        Dataset right = left;
+        Iterator<Map.Entry<String, Dataset>> iterator = datasets.entrySet().iterator();
+        Map.Entry<String, Dataset> left = iterator.next();
+        Map.Entry<String, Dataset> right = left;
 
         ImmutableList.Builder<Stream<DataPoint>> originals = ImmutableList.builder();
 
@@ -98,9 +98,9 @@ public class OuterJoinOperation extends AbstractJoinOperation {
         try {
 
             Stream<DataPoint> original = getOrSortData(
-                    left,
-                    adjustOrderForStructure(requiredOrder, left.getDataStructure()),
-                    filtering,
+                    left.getValue(),
+                    adjustOrderForStructure(requiredOrder, left.getValue().getDataStructure()),
+                    renameFilterColumns(filtering, left.getKey()),
                     components
             );
             originals.add(original);
@@ -114,9 +114,9 @@ public class OuterJoinOperation extends AbstractJoinOperation {
                 right = iterator.next();
 
                 Stream<DataPoint> rightStream = getOrSortData(
-                        right,
-                        adjustOrderForStructure(requiredOrder, right.getDataStructure()),
-                        filtering,
+                        right.getValue(),
+                        adjustOrderForStructure(requiredOrder, right.getValue().getDataStructure()),
+                        renameFilterColumns(filtering, right.getKey()),
                         components
                 );
                 originals.add(rightStream);
@@ -128,9 +128,10 @@ public class OuterJoinOperation extends AbstractJoinOperation {
 
                 result = StreamSupport.stream(
                         new OuterJoinSpliterator<>(
-                                new JoinKeyExtractor(first ? left.getDataStructure() : getDataStructure(), predicate),
-                                new JoinKeyExtractor(right.getDataStructure(), predicate), predicate,
-                                new OuterJoinMerger(this, right),
+                                new JoinKeyExtractor(first ? left.getValue().getDataStructure() : getDataStructure(),
+                                        predicate),
+                                new JoinKeyExtractor(right.getValue().getDataStructure(), predicate), predicate,
+                                new OuterJoinMerger(this, right.getValue()),
                                 result.spliterator(),
                                 rightStream.spliterator()
                         ), false

@@ -37,12 +37,14 @@ import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.Filtering;
+import no.ssb.vtl.model.FilteringSpecification;
 import no.ssb.vtl.model.Ordering;
 import no.ssb.vtl.model.Ordering.Direction;
 import no.ssb.vtl.model.VtlFiltering;
 import no.ssb.vtl.model.VtlOrdering;
 import no.ssb.vtl.script.operations.AbstractDatasetOperation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -356,7 +358,7 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
     }
 
     protected Stream<DataPoint> getOrSortData(Dataset dataset, Ordering order, Filtering filtering, Set<String> components) {
-        VtlFiltering vtlFiltering = VtlFiltering.using(dataset).transpose(filtering);
+        VtlFiltering vtlFiltering = computeDatasetFiltering(dataset, filtering);
         // TODO: Refactor to use AbstractOperation directly.
         if (dataset instanceof AbstractDatasetOperation) {
             return ((AbstractDatasetOperation) dataset).computeData(new VtlOrdering(order, dataset.getDataStructure()), vtlFiltering, components);
@@ -372,6 +374,11 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
         }
     }
 
+    @VisibleForTesting
+    VtlFiltering computeDatasetFiltering(Dataset dataset, Filtering filtering) {
+        return VtlFiltering.using(dataset).transpose(filtering);
+    }
+
     /**
      * Convert the {@link Ordering} so it uses the given structure.
      */
@@ -384,6 +391,32 @@ public abstract class AbstractJoinOperation extends AbstractDatasetOperation imp
             }
         }
         return using.build();
+    }
+
+    /**
+     * Convert the {@link Filtering} so that the column names can be identified by the dataset.
+     */
+    protected Filtering renameFilterColumns(FilteringSpecification filtering, String datasetKey) {
+        if (filtering == Filtering.ALL) {
+            return VtlFiltering.literal(false, FilteringSpecification.Operator.TRUE, null, null);
+        }
+        Boolean negated = filtering.isNegated();
+        FilteringSpecification.Operator operator = filtering.getOperator();
+        if (filtering.getOperator() == FilteringSpecification.Operator.OR || filtering.getOperator() == FilteringSpecification.Operator.AND) {
+            List<VtlFiltering> operands = new ArrayList<>();
+            for (FilteringSpecification operand : filtering.getOperands()) {
+                operands.add((VtlFiltering) renameFilterColumns(operand, datasetKey));
+            }
+            return VtlFiltering.nary(negated, operator, operands);
+        } else {
+            Map<String, String> columnMap = columnMapping.column(datasetKey);
+                return VtlFiltering.literal(
+                        negated,
+                        operator,
+                    columnMap.getOrDefault(filtering.getColumn(), filtering.getColumn()),
+                        filtering.getValue()
+                );
+        }
     }
 
     @Override

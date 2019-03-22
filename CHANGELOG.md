@@ -4,11 +4,16 @@
 
 ### Added
 
+* Add filter propagation logic
+* Add filter propagation on join operations
+
 ### Changed
-* Handle datasets with unequal attribute variables in union operations. All attributes will be kept and given NULL value if not present in source dataset
-* CommonIdentifierBindings now doesn’t have bindings to the datasets, only the identifier keys. This means that dataset prefix in the ‘on’ clause in join operations is no longer allowed. This makes a more strict VTL parsing, so one can only use common identifiers, and not just any identifier.
+
+* Handle datasets with unequal attribute variables in union operations. All attributes will be 
+kept and given NULL value if not present in source dataset
+* CommonIdentifierBindings now doesn’t have bindings to the datasets, only the identifier keys. This means that dataset prefix in the ‘on’ clause in join operations is no longer allowed. This makes a more strict VTL parsing, so one can only 
+use common identifiers, and not just any identifier.
 * Change inner and outer joins as described in the VTL 1.1 specification (1810-1818).
-* Add filter propagation
 
 ## 0.1.12-1 - 2019-03-05
 
