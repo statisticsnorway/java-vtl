@@ -15,7 +15,15 @@ kept and given NULL value if not present in source dataset
 use common identifiers, and not just any identifier.
 * Change inner and outer joins as described in the VTL 1.1 specification (1810-1818).
 
+## 0.1.12-2 - 2019-03-21
+
+### Changed
+
+* Update project dependencies
+
 ## 0.1.12-1 - 2019-03-05
+
+### Changed 
 
 * Update URLs to internal SSB distribution repos
 

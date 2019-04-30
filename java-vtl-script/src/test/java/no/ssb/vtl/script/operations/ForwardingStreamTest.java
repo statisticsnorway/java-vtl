@@ -292,7 +292,7 @@ public class ForwardingStreamTest {
                 return Stream.of(1, 2, 3);
             }
         };
-        assertThat(forwardedStream.iterator()).containsExactly(
+        assertThat(forwardedStream.iterator()).toIterable().containsExactly(
                 1, 2, 3
         );
     }
