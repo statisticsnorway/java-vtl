@@ -9,10 +9,9 @@
 
 ### Changed
 
-* Handle datasets with unequal attribute variables in union operations. All attributes will be 
-kept and given NULL value if not present in source dataset
-* CommonIdentifierBindings now doesn’t have bindings to the datasets, only the identifier keys. This means that dataset prefix in the ‘on’ clause in join operations is no longer allowed. This makes a more strict VTL parsing, so one can only 
-use common identifiers, and not just any identifier.
+* Uses maven profile to disable coverage on local builds
+* Handle datasets with unequal attribute variables in union operations. All attributes will be kept and given NULL value if not present in source dataset
+* CommonIdentifierBindings now doesn’t have bindings to the datasets, only the identifier keys. This means that dataset prefix in the ‘on’ clause in join operations is no longer allowed. This makes a more strict VTL parsing, so one can only use common identifiers, and not just any identifier.
 * Change inner and outer joins as described in the VTL 1.1 specification (1810-1818).
 
 ## 0.1.12-2 - 2019-03-21
