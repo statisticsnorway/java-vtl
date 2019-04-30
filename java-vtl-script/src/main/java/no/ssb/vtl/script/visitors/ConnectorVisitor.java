@@ -26,6 +26,8 @@ import no.ssb.vtl.connectors.ConnectorException;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.ContextualRuntimeException;
+import no.ssb.vtl.script.operations.DatasetOperationWrapper;
 
 import java.util.List;
 
@@ -53,10 +55,10 @@ public class ConnectorVisitor extends VTLBaseVisitor<Dataset> {
                 if (!connector.canHandle(identifier)) {
                     continue;
                 }
-                return connector.getDataset(identifier);
+                return new DatasetOperationWrapper(connector.getDataset(identifier));
             }
         } catch (ConnectorException ce) {
-            Throwables.propagate(ce);
+            throw new ContextualRuntimeException(ce, ctx);
         }
         return null;
     }

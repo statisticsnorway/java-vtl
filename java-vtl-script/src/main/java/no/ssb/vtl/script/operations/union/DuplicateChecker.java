@@ -23,7 +23,7 @@ package no.ssb.vtl.script.operations.union;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
-import no.ssb.vtl.model.Order;
+import no.ssb.vtl.model.Ordering;
 import no.ssb.vtl.model.VTLObject;
 import no.ssb.vtl.script.error.VTLRuntimeException;
 
@@ -35,11 +35,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DuplicateChecker implements UnaryOperator<DataPoint> {
 
-    private  final Order order;
+    private  final Ordering order;
     private final DataStructure structure;
     private DataPoint last;
 
-    public DuplicateChecker(Order order, DataStructure structure) {
+    public DuplicateChecker(Ordering order, DataStructure structure) {
         this.order = checkNotNull(order);
         this.structure = checkNotNull(structure);
     }

@@ -33,7 +33,7 @@ import no.ssb.vtl.parser.VTLParser;
 import no.ssb.vtl.script.error.ContextualRuntimeException;
 import no.ssb.vtl.script.functions.AggregationAvgFunction;
 import no.ssb.vtl.script.functions.AggregationSumFunction;
-import no.ssb.vtl.script.operations.AggregationOperation;
+import no.ssb.vtl.script.operations.aggregation.AggregationOperation;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;

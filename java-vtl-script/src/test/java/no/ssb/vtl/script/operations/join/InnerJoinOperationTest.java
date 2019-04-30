@@ -28,11 +28,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
-import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLObject;
+import no.ssb.vtl.model.VtlOrdering;
 import no.ssb.vtl.script.support.DatasetCloseWatcher;
 import no.ssb.vtl.script.support.VTLPrintStream;
 import org.junit.Test;
@@ -126,80 +125,18 @@ public class InnerJoinOperationTest extends RandomizedTest {
         InnerJoinOperation joinOperation = new InnerJoinOperation(
                 ImmutableMap.of(
                         "ds1", ds1, "ds2", ds2
-                ), Collections.emptySet()
+                ), Collections.emptyMap()
         );
 
         // This order is not possible.
-        Optional<Stream<DataPoint>> emptyData = joinOperation.getData(
-                Order.create(joinOperation.getDataStructure())
-                        .put("idx", Order.Direction.DESC)
+        Optional<Stream<DataPoint>> data = joinOperation.getData(
+                VtlOrdering.using(joinOperation)
+                        .desc("idx")
                         .build()
         );
-        assertThat(emptyData.isPresent()).isFalse();
-
-        assertThat(joinOperation.getData()).containsExactlyInAnyOrder(
-                DataPoint.create("D", "ds1 match", "ds2 match"),
-                DataPoint.create("C", "ds1 match", "ds2 match")
-        );
-    }
-
-    @Test
-    public void testSourceOrderEmpty() {
-        StaticDataset ds1 = StaticDataset.create()
-                .addComponent("id1", IDENTIFIER, String.class)
-                .addComponent("idx", IDENTIFIER, String.class)
-                .addPoints("D", "ds1 match")
-                .addPoints("B", "ds1 miss")
-                .addPoints("C", "ds1 match")
-                .addPoints("A", "ds1 miss")
-                .build();
-
-        StaticDataset ds2 = StaticDataset.create()
-                .addComponent("id1", IDENTIFIER, String.class)
-                .addComponent("idy", IDENTIFIER, String.class)
-                .addPoints("F", "ds2 miss")
-                .addPoints("C", "ds2 match")
-                .addPoints("E", "ds2 miss")
-                .addPoints("D", "ds2 match")
-                .build();
-
-        Dataset orderCheckDataset = new Dataset() {
-
-            @Override
-            public Stream<DataPoint> getData() {
-                return ds2.getData();
-            }
-
-            @Override
-            public Optional<Map<String, Integer>> getDistinctValuesCount() {
-                return ds2.getDistinctValuesCount();
-            }
-
-            @Override
-            public Optional<Long> getSize() {
-                return ds2.getSize();
-            }
-
-            @Override
-            public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
-                return Optional.empty();
-            }
-
-            @Override
-            public DataStructure getDataStructure() {
-                return ds2.getDataStructure();
-            }
-        };
-
-        InnerJoinOperation joinOperation = new InnerJoinOperation(
-                ImmutableMap.of(
-                        "ds1", ds1, "ds2", orderCheckDataset
-                ), Collections.emptySet()
-        );
-
-        Optional<Stream<DataPoint>> data = joinOperation.getData(Order.create(joinOperation.getDataStructure()).put("id1", Order.Direction.DESC).build());
         assertThat(data.isPresent()).isTrue();
-        assertThat(data.get()).containsExactly(
+
+        assertThat(data.get()).containsExactlyInAnyOrder(
                 DataPoint.create("D", "ds1 match", "ds2 match"),
                 DataPoint.create("C", "ds1 match", "ds2 match")
         );

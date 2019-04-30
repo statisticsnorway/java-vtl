@@ -720,7 +720,7 @@ exprFactor
   | NOT exprMember
   ;
 
-/* Membership and clauses */
+/* Membership and getClauses */
 
 exprMember
   :

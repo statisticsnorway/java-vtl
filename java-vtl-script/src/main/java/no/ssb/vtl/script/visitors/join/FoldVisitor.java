@@ -23,7 +23,7 @@ package no.ssb.vtl.script.visitors.join;
 import com.google.common.collect.ImmutableSet;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.FoldOperation;
+import no.ssb.vtl.script.operations.fold.FoldOperation;
 import no.ssb.vtl.script.visitors.ComponentVisitor;
 import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;
 

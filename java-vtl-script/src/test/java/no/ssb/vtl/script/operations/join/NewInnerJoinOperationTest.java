@@ -31,7 +31,7 @@ import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.StaticDataset;
-import no.ssb.vtl.script.operations.KeepOperation;
+import no.ssb.vtl.script.operations.drop.KeepOperation;
 import no.ssb.vtl.test.RandomizedDataset;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -39,7 +39,6 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

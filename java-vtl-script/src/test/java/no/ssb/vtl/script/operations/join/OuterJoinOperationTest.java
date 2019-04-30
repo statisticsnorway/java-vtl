@@ -26,15 +26,32 @@ import com.carrotsearch.randomizedtesting.annotations.Seed;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import no.ssb.vtl.connectors.Connector;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Filtering;
+import no.ssb.vtl.model.FilteringSpecification;
+import no.ssb.vtl.model.Ordering;
 import no.ssb.vtl.model.StaticDataset;
 import no.ssb.vtl.model.VTLObject;
+import no.ssb.vtl.model.VTLString;
+import no.ssb.vtl.script.VTLScriptEngine;
+import no.ssb.vtl.script.expressions.LiteralExpression;
+import no.ssb.vtl.script.expressions.MembershipExpression;
+import no.ssb.vtl.script.expressions.VariableExpression;
+import no.ssb.vtl.script.expressions.equality.EqualExpression;
+import no.ssb.vtl.script.expressions.logic.OrExpression;
+import no.ssb.vtl.script.operations.filter.FilterOperation;
 import no.ssb.vtl.script.support.VTLPrintStream;
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.Test;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +59,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.ssb.vtl.model.Component.Role.ATTRIBUTE;
-import static no.ssb.vtl.model.Component.Role.IDENTIFIER;
-import static no.ssb.vtl.model.Component.Role.MEASURE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static no.ssb.vtl.model.Component.Role.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class OuterJoinOperationTest extends RandomizedTest {
+
+    private Connector connector = mock(Connector.class);
+    private ScriptEngine engine = new VTLScriptEngine(connector);
+    private Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
 
     @Test
     @Seed("8144D952C87F27F0")
@@ -303,6 +323,76 @@ public class OuterJoinOperationTest extends RandomizedTest {
                         DataPoint.create("3", "left 3", "right 3", "c"),
                         DataPoint.create("4", null, "right 4", "d")
                 );
+    }
+
+    @Test
+    public void testFilterPropagation() throws ScriptException {
+        Dataset ds1 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addComponent("id3", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addPoints("1", "a", "id", "left 1a")
+                .addPoints("2", "b", "id", "left 2b")
+                .addPoints("3", "c", "id", "left 3c")
+                .build();
+
+        Dataset ds2 = StaticDataset.create()
+                .addComponent("id1", IDENTIFIER, String.class)
+                .addComponent("id2", IDENTIFIER, String.class)
+                .addComponent("id3", IDENTIFIER, String.class)
+                .addComponent("value", MEASURE, String.class)
+                .addPoints("2", "b", "id", "right 2b")
+                .addPoints("3", "c", "id", "right 3c")
+                .addPoints("4", "d", "id", "right 4d")
+                .build();
+
+        // This shows the expression and expected result
+        bindings.put("ds1", ds1);
+        bindings.put("ds2", ds2);
+        engine.eval("result := [outer ds1,ds2] {\n" +
+                "  filter id2 = \"2\" or ds1.value = \"left 2b\"\n" +
+                "}");
+        Dataset result = (Dataset) bindings.get("result");
+        assertThat(result.getData()).containsExactlyInAnyOrder(
+                DataPoint.create("2", "b", "id", "left 2b", "right 2b")
+        );
+
+        // Now creating the same expression via nested operations
+        OuterJoinOperation outerJoinOperation = new OuterJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2));
+
+        FilterOperation filterOperation = new FilterOperation(outerJoinOperation, new OrExpression(
+                new EqualExpression(
+                    new VariableExpression(VTLString.class, "id2"),
+                    new LiteralExpression(VTLString.of("2"))),
+                new EqualExpression(
+                        new MembershipExpression(VTLString.class, "ds1", "value"),
+                        new LiteralExpression(VTLString.of("left 2b")))),
+                outerJoinOperation.getJoinScope());
+
+        FilteringSpecification renamedFilter = filterOperation.computeRequiredFiltering(Filtering.ALL);
+        assertThat(renamedFilter.toString()).isEqualTo("(id2=2|ds1_value=left 2b)");
+
+        // Check filter propagation for ds1
+        Filtering ds1Filter = outerJoinOperation.renameFilterColumns(renamedFilter, "ds1");
+        assertThat(ds1Filter.toString()).isEqualTo("(id2=2|value=left 2b)");
+        assertThat(outerJoinOperation.computeDatasetFiltering(ds1, ds1Filter).toString())
+                .isEqualTo("(id2=2|value=left 2b)");
+
+        // Check filter propagation for ds2
+        Filtering ds2Filter = outerJoinOperation.renameFilterColumns(renamedFilter, "ds2");
+        assertThat(ds2Filter.toString()).isEqualTo("(id2=2|ds1_value=left 2b)");
+        assertThat(outerJoinOperation.computeDatasetFiltering(ds2, ds2Filter).toString()).isEqualTo("TRUE");
+
+        // Should be the same result as above
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            Stream<DataPoint> stream = filterOperation.computeData(Ordering.ANY, Filtering.ALL,
+                    filterOperation.getDataStructure().keySet());
+            softly.assertThat(stream).containsExactly(
+                    DataPoint.create("2", "b", "id", "left 2b", "right 2b")
+           );
+            stream.close();
+        }
     }
 
     private DataPoint tuple(VTLObject... components) {

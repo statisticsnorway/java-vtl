@@ -21,29 +21,20 @@ package no.ssb.vtl.script.operations.foreach;
  */
 
 import com.google.common.collect.ImmutableMap;
-import no.ssb.vtl.model.Component;
-import no.ssb.vtl.model.Order;
+import no.ssb.vtl.model.Ordering;
 
 import java.util.Comparator;
 import java.util.Map;
 
-import static no.ssb.vtl.model.Order.Direction.ASC;
-import static no.ssb.vtl.model.Order.VTL_OBJECT_COMPARATOR;
+import static no.ssb.vtl.model.VTLObject.VTL_OBJECT_COMPARATOR;
+import static no.ssb.vtl.model.Ordering.Direction.ASC;
 
 public class DataPointMapComparator implements Comparator<DataPointMap.View> {
 
-    private final ImmutableMap<String, Order.Direction> identifiers;
+    private final ImmutableMap<String, Ordering.Direction> identifiers;
 
-    public DataPointMapComparator(Map<String, Order.Direction> order) {
+    public DataPointMapComparator(Map<String, Ordering.Direction> order) {
         this.identifiers = ImmutableMap.copyOf(order);
-    }
-
-    public DataPointMapComparator(Map<String, Component> identifiers, Order order) {
-        ImmutableMap.Builder<String, Order.Direction> builder = ImmutableMap.builder();
-        for (String key : identifiers.keySet()) {
-            builder.put(key, order.get(identifiers.get(key)));
-        }
-        this.identifiers = builder.build();
     }
 
     @Override

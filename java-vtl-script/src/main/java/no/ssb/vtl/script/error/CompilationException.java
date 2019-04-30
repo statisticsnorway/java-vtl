@@ -31,16 +31,4 @@ public abstract class CompilationException extends ScriptException implements VT
     public CompilationException(String s) {
         super(s);
     }
-
-    public CompilationException(Exception e) {
-        super(e);
-    }
-
-    public CompilationException(String message, String fileName, int lineNumber) {
-        super(message, fileName, lineNumber);
-    }
-
-    public CompilationException(String message, String fileName, int lineNumber, int columnNumber) {
-        super(message, fileName, lineNumber, columnNumber);
-    }
 }

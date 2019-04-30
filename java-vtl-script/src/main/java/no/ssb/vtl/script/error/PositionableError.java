@@ -23,7 +23,6 @@ package no.ssb.vtl.script.error;
 /**
  * Mark the exception as positionable.
  */
-@Deprecated
 public interface PositionableError {
 
     int getLineNumber();

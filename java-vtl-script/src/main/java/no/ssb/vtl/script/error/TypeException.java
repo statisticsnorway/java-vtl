@@ -34,21 +34,6 @@ public class TypeException extends CompilationException {
         this.VTLCode = checkVTLCode(vtlCode, "VTL-02");
     }
 
-    public TypeException(Exception e, String vtlCode) {
-        super(e);
-        this.VTLCode = checkVTLCode(vtlCode, "VTL-02");
-    }
-
-    public TypeException(String message, String fileName, int lineNumber, String vtlCode) {
-        super(message, fileName, lineNumber);
-        this.VTLCode = checkVTLCode(vtlCode, "VTL-02");
-    }
-
-    public TypeException(String message, String fileName, int lineNumber, int columnNumber, String vtlCode) {
-        super(message, fileName, lineNumber, columnNumber);
-        this.VTLCode = checkVTLCode(vtlCode, "VTL-02");
-    }
-
     @Override
     public String getVTLCode() {
         return VTLCode;

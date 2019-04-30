@@ -21,6 +21,7 @@ package no.ssb.vtl.model;
  */
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -28,6 +29,11 @@ import java.util.function.Supplier;
  * Root of the VTL data type hierarchy.
  */
 public abstract class VTLObject<V> implements Supplier<V>, Comparable<Object> {
+
+    @SuppressWarnings("unchecked")
+    public static final Comparator<Comparable> NULLS_FIRST = Comparator.<Comparable>nullsFirst(Comparator.naturalOrder());
+    @SuppressWarnings("unchecked")
+    public static final Comparator<VTLObject> VTL_OBJECT_COMPARATOR = Comparator.comparing(vtlObject -> (Comparable) vtlObject.get(), NULLS_FIRST);
 
     /**
      * This method is marked as deprecated (Hadrien, 02-05-2017).
@@ -121,8 +127,6 @@ public abstract class VTLObject<V> implements Supplier<V>, Comparable<Object> {
         return VTLFloat.of(num);
     }
 
-
-    @Deprecated
     public static final VTLObject NULL = new VTLObject() {
         @Override
         public Object get() {
@@ -143,38 +147,13 @@ public abstract class VTLObject<V> implements Supplier<V>, Comparable<Object> {
 
     /**
      * Note: this class has a natural ordering that is inconsistent with equals.
-     * <br/>
-     * TODO: Fix ordering?
-     * TODO: Make comparable to only VTLObject
      */
     @Override
     public int compareTo(Object o) {
-        Object value = this.get();
-        Object other;
-        if (o instanceof VTLObject) {
-            other = ((VTLObject) o).get();
-        } else {
-            other = o;
+        if (!(o instanceof VTLObject)) {
+            throw new ClassCastException("could not cast to VTLObject");
         }
-
-        if (value == null) {
-            return (other == null) ? 0 : -1;
-        } else if (other == null) {
-            return 1;
-        }
-
-        // TODO: Should we allow this?
-        // Compare numbers
-        //if (Number.class.isAssignableFrom(other.getClass()) && Number.class.isAssignableFrom(value.getClass()))
-        //    return Double.compare(((Number) value).doubleValue(), ((Number) other).doubleValue());
-
-        // Compare comparable.
-        if (other.getClass() == value.getClass() && value instanceof Comparable)
-            return ((Comparable) value).compareTo(other);
-
-        throw new IllegalArgumentException(
-                String.format("Cannot compare %s of type %s with %s of type %s",
-                        value, value.getClass(), other, other.getClass()));
+        return VTL_OBJECT_COMPARATOR.compare(this, (VTLObject) o);
     }
 
     @Override
@@ -185,7 +164,7 @@ public abstract class VTLObject<V> implements Supplier<V>, Comparable<Object> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof VTLObject)) return false;
+        if (!(o instanceof VTLObject)) return false;
         VTLObject<?> value = (VTLObject<?>) o;
         return Objects.equals(get(), value.get());
     }

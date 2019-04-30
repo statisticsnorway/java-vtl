@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations.check;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,12 +22,16 @@ package no.ssb.vtl.script.operations.check;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import no.ssb.vtl.model.AbstractUnaryDatasetOperation;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
+import no.ssb.vtl.model.Filtering;
+import no.ssb.vtl.model.FilteringSpecification;
+import no.ssb.vtl.model.Ordering;
+import no.ssb.vtl.model.OrderingSpecification;
 import no.ssb.vtl.model.VTLObject;
+import no.ssb.vtl.script.operations.AbstractUnaryDatasetOperation;
 
 import java.util.Map;
 import java.util.Objects;
@@ -35,7 +39,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class CheckSingleRuleOperation extends AbstractUnaryDatasetOperation {
 
@@ -73,7 +78,7 @@ public class CheckSingleRuleOperation extends AbstractUnaryDatasetOperation {
     }
 
     @Override
-    public Stream<DataPoint> getData() {
+    public Stream<DataPoint> computeData(Ordering orders, Filtering filtering, Set<String> components) {
         Dataset childDataset = getChild();
         DataStructure newStructure = getDataStructure();
         DataStructure previousStructure = childDataset.getDataStructure();
@@ -191,6 +196,16 @@ public class CheckSingleRuleOperation extends AbstractUnaryDatasetOperation {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public FilteringSpecification computeRequiredFiltering(FilteringSpecification filtering) {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public OrderingSpecification computeRequiredOrdering(OrderingSpecification filtering) {
+        throw new UnsupportedOperationException("TODO");
     }
 
 

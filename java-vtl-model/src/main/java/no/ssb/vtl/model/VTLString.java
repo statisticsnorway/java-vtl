@@ -33,11 +33,9 @@ public abstract class VTLString extends VTLObject<String> implements VTLTyped<VT
 
     public static VTLString of(String string) {
         return new VTLString() {
-            /**
-             * Returns the value of the data point.
-             */
             @Override
             public String get() {
+                // TODO: This is hot code. We should rather check in the comparator.
                 return "".equals(string) ? null : string;
             }
         };

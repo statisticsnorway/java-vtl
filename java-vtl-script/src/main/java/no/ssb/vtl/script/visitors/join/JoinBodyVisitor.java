@@ -25,7 +25,7 @@ import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLExpression;
 import no.ssb.vtl.parser.VTLBaseVisitor;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.JoinAssignment;
+import no.ssb.vtl.script.operations.join.JoinAssignment;
 import no.ssb.vtl.script.operations.join.AbstractJoinOperation;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
 import no.ssb.vtl.script.visitors.ComponentRoleVisitor;

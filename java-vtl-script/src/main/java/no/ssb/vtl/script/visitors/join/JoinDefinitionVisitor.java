@@ -9,9 +9,9 @@ package no.ssb.vtl.script.visitors.join;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +21,12 @@ package no.ssb.vtl.script.visitors.join;
  */
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
+import no.ssb.vtl.script.error.ContextualRuntimeException;
 import no.ssb.vtl.script.operations.join.AbstractJoinOperation;
-import no.ssb.vtl.script.operations.join.ComponentBindings;
-import no.ssb.vtl.script.operations.join.CrossJoinOperation;
+import no.ssb.vtl.script.operations.join.CommonIdentifierBindings;
 import no.ssb.vtl.script.operations.join.InnerJoinOperation;
 import no.ssb.vtl.script.operations.join.OuterJoinOperation;
 import no.ssb.vtl.script.visitors.ComponentVisitor;
@@ -65,13 +64,13 @@ public class JoinDefinitionVisitor extends VTLDatasetExpressionVisitor<AbstractJ
         return builder.build();
     }
 
-    private ImmutableSet<Component> extractIdentifierComponents(List<VTLParser.VariableExpressionContext> identifiers,
+    private ImmutableMap<String, Component> extractIdentifierComponents(List<VTLParser.VariableContext> identifiers,
                                                                 ImmutableMap<String, Dataset> datasets) {
-        ImmutableSet.Builder<Component> builder = ImmutableSet.builder();
-        ComponentVisitor componentVisitor = new ComponentVisitor(new ComponentBindings(datasets));
-        for (VTLParser.VariableExpressionContext identifier : identifiers) {
+        ImmutableMap.Builder<String, Component> builder = ImmutableMap.builder();
+        ComponentVisitor componentVisitor = new ComponentVisitor(new CommonIdentifierBindings(datasets));
+        for (VTLParser.VariableContext identifier : identifiers) {
             Component identifierComponent = componentVisitor.visit(identifier);
-            builder.add(identifierComponent);
+            builder.put(identifier.getText(), identifierComponent);
         }
         return builder.build();
     }
@@ -80,9 +79,11 @@ public class JoinDefinitionVisitor extends VTLDatasetExpressionVisitor<AbstractJ
     public AbstractJoinOperation visitJoinDefinition(VTLParser.JoinDefinitionContext ctx) {
 
         // Create a component bindings to be able to resolve components.
-        ImmutableMap<String, Dataset> datasets = extractDatasets(ctx.variable());
+        ImmutableMap<String, Dataset> datasets = extractDatasets(ctx.datasets.variable());
 
-        ImmutableSet<Component> identifiers = extractIdentifierComponents(ctx.variableExpression(), datasets);
+        ImmutableMap<String, Component> identifiers = ctx.identifiers == null
+                ? ImmutableMap.of()
+                : extractIdentifierComponents(ctx.identifiers.variable(), datasets);
 
         Integer joinType = Optional.ofNullable(ctx.type).map(Token::getType).orElse(VTLParser.INNER);
         switch (joinType) {
@@ -91,7 +92,9 @@ public class JoinDefinitionVisitor extends VTLDatasetExpressionVisitor<AbstractJ
             case VTLParser.OUTER:
                 return new OuterJoinOperation(datasets, identifiers);
             case VTLParser.CROSS:
-                return new CrossJoinOperation(datasets, identifiers);
+                //TODO: Finish CrossJoinOperation
+                throw new ContextualRuntimeException("Not implemented", ctx);
+
 
         }
         return super.visitJoinDefinition(ctx);

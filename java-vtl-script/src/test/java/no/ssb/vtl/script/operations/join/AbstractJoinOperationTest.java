@@ -9,9 +9,9 @@ package no.ssb.vtl.script.operations.join;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,42 +24,31 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Component.Role;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.DataStructure;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
+import no.ssb.vtl.model.Filtering;
+import no.ssb.vtl.model.FilteringSpecification;
+import no.ssb.vtl.model.Ordering;
+import no.ssb.vtl.model.OrderingSpecification;
 import no.ssb.vtl.model.StaticDataset;
-import no.ssb.vtl.model.VTLObject;
 import org.junit.Test;
 
-import javax.script.Bindings;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.guava.api.Assertions.assertThat;
-import static org.assertj.guava.api.Assertions.entry;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AbstractJoinOperationTest {
@@ -76,15 +65,15 @@ public class AbstractJoinOperationTest {
         Table<String, String, String> columnMapping = AbstractJoinOperation.getColumnMapping(ImmutableMap.of("ds", ds));
 
         assertThat(columnMapping).hasColumnCount(1).hasRowCount(9)
-            .containsCell("id1","ds","id1")
-            .containsCell("id2","ds","id2")
-            .containsCell("id3","ds","id3")
-            .containsCell("me1","ds","me1")
-            .containsCell("me2","ds","me2")
-            .containsCell("me3","ds","me3")
-            .containsCell("at1","ds","at1")
-            .containsCell("at2","ds","at2")
-            .containsCell("at3","ds","at3");
+                .containsCell("id1", "ds", "id1")
+                .containsCell("id2", "ds", "id2")
+                .containsCell("id3", "ds", "id3")
+                .containsCell("me1", "ds", "me1")
+                .containsCell("me2", "ds", "me2")
+                .containsCell("me3", "ds", "me3")
+                .containsCell("at1", "ds", "at1")
+                .containsCell("at2", "ds", "at2")
+                .containsCell("at3", "ds", "at3");
 
         Table<String, String, String> columnMappingTwo = AbstractJoinOperation.getColumnMapping(
                 ImmutableMap.of("ds1", ds, "ds2", ds)
@@ -160,12 +149,44 @@ public class AbstractJoinOperationTest {
                 .containsCell("idC", "ds3", "idC")
                 .containsCell("ds3_me1", "ds3", "me1")
                 .containsCell("ds3_at2", "ds3", "at2")
-                .containsCell("ds3_at3", "ds3", "at3")
+                .containsCell("ds3_at3", "ds3", "at3");
+    }
 
+    @Test
+    public void testComponentMappingWithJoinOnIdentifiers() {
+        StaticDataset ds = datasetWith(
+                ImmutableSet.of("id1", "id2", "id3"),
+                ImmutableSet.of("me1", "me2", "me3"),
+                ImmutableSet.of("at1", "at2", "at3")
+        );
 
-        ;
+        Table<String, String, String> columnMappingTwo = AbstractJoinOperation.getColumnMapping(
+                ImmutableMap.of("ds1", ds, "ds2", ds), ImmutableSet.of("id1")
+        );
 
+        assertThat(columnMappingTwo).hasColumnCount(2).hasRowCount(17)
+                .containsCell("id1", "ds1", "id1")
+                .containsCell("id1", "ds2", "id1")
 
+                .containsCell("ds1_id2", "ds1", "id2")
+                .containsCell("ds1_id3", "ds1", "id3")
+
+                .containsCell("ds2_id2", "ds2", "id2")
+                .containsCell("ds2_id3", "ds2", "id3")
+
+                .containsCell("ds1_me1", "ds1", "me1")
+                .containsCell("ds1_me2", "ds1", "me2")
+                .containsCell("ds1_me3", "ds1", "me3")
+                .containsCell("ds1_at1", "ds1", "at1")
+                .containsCell("ds1_at2", "ds1", "at2")
+                .containsCell("ds1_at3", "ds1", "at3")
+
+                .containsCell("ds2_me1", "ds2", "me1")
+                .containsCell("ds2_me2", "ds2", "me2")
+                .containsCell("ds2_me3", "ds2", "me3")
+                .containsCell("ds2_at1", "ds2", "at1")
+                .containsCell("ds2_at2", "ds2", "at2")
+                .containsCell("ds2_at3", "ds2", "at3");
     }
 
     private StaticDataset datasetWith(Set<String> identifiers, Set<String> measures, Set<String> attributes) {
@@ -180,26 +201,6 @@ public class AbstractJoinOperationTest {
             builder.addComponent(attribute, Role.ATTRIBUTE, String.class);
         }
         return builder.build();
-    }
-
-    @Test
-    // TODO: Move to ComponentBindingsTest
-    public void testJoinBindingsOneDataset() {
-
-        StaticDataset t1 = StaticDataset.create()
-                .addComponent("id1", Role.IDENTIFIER, String.class)
-                .addComponent("id2", Role.IDENTIFIER, Long.class)
-                .addComponent("uni1", Role.IDENTIFIER, Double.class)
-                .addComponent("m1", Role.MEASURE, Instant.class)
-                .addComponent("a1", Role.MEASURE, Boolean.class)
-                .build();
-
-        Bindings result = AbstractJoinOperation.createJoinScope(ImmutableMap.of(
-                "t1", t1
-        ));
-
-        assertThat(result).containsOnlyKeys("id1", "id2", "uni1", "m1", "a1", "t1");
-
     }
 
     @Test
@@ -231,7 +232,7 @@ public class AbstractJoinOperationTest {
     }
 
     @Test
-    public void testCommonComponentsButWrongType() {
+    public void testCommonIdentifiersButWrongType() {
 
         Dataset ds1 = mock(Dataset.class);
         DataStructure s1 = DataStructure.builder()
@@ -279,20 +280,20 @@ public class AbstractJoinOperationTest {
 
         new TestAbstractJoinOperation(
                 ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                ImmutableSet.of(s1.get("id1"))
+                ImmutableMap.of("id1", s1.get("id1"))
         );
 
         assertThatThrownBy(() -> {
             new TestAbstractJoinOperation(
                     ImmutableMap.of("ds1", ds1, "ds2", ds2),
-                    ImmutableSet.of(s1.get("id2"))
+                    ImmutableMap.of("id2", s1.get("id2"))
             );
         }).isNotNull().hasMessageContaining("types");
     }
 
 
     @Test
-    public void testCreateComponentMapping() throws Exception {
+    public void testCreateIdentifierMapping() throws Exception {
 
         Dataset ds1 = mock(Dataset.class);
         DataStructure s1 = DataStructure.builder()
@@ -351,10 +352,7 @@ public class AbstractJoinOperationTest {
 
     }
 
-    // TODO(hk): Operating on the same dataset is still problematic.
-    // We are closer to stop using Component as positions key in datapoints.
-    // We just need to use the column mapping instead of the component mapping
-    // @Test
+    @Test
     public void testSameDatasetShouldNotFail() throws Exception {
 
         Dataset ds1 = mock(Dataset.class);
@@ -386,6 +384,23 @@ public class AbstractJoinOperationTest {
                 .hasMessageContaining("join")
                 .hasMessageContaining("empty")
                 .hasMessageContaining("dataset");
+    }
+
+    @Test
+    public void testOnlyOneDataset() {
+
+        StaticDataset t1 = StaticDataset.create()
+                .addComponent("id1", Role.IDENTIFIER, String.class)
+                .addComponent("id2", Role.IDENTIFIER, Long.class)
+                .addComponent("uni1", Role.IDENTIFIER, Double.class)
+                .addComponent("m1", Role.MEASURE, Instant.class)
+                .addComponent("a1", Role.MEASURE, Boolean.class)
+                .build();
+
+        TestAbstractJoinOperation operation = new TestAbstractJoinOperation(ImmutableMap.of("t1", t1));
+
+        assertThat(operation.getSize()).isEqualTo(t1.getSize());
+        assertThat(operation.getDistinctValuesCount()).isEqualTo(t1.getDistinctValuesCount());
     }
 
 
@@ -422,6 +437,62 @@ public class AbstractJoinOperationTest {
                 .isFalse();
     }
 
+    @Test
+    public void testCommonIdentifiers() {
+
+        Dataset ds1 = mock(Dataset.class);
+        DataStructure s1 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("id2", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .put("at1", Role.ATTRIBUTE, Long.class)
+                .build();
+        when(ds1.getDataStructure()).thenReturn(s1);
+
+        Dataset ds2 = mock(Dataset.class);
+        DataStructure s2 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("id2", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .put("at1", Role.ATTRIBUTE, Long.class)
+                .build();
+        when(ds2.getDataStructure()).thenReturn(s2);
+
+        TestAbstractJoinOperation joinOperation = new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
+                Collections.emptyMap());
+        assertThat(joinOperation.getCommonIdentifiers().values())
+                .containsExactlyInAnyOrder(s1.get("id1"), s1.get("id2"));
+
+        joinOperation = new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
+                ImmutableMap.of("id1", s1.get("id1")));
+        assertThat(joinOperation.getCommonIdentifiers().values())
+                .containsExactlyInAnyOrder(s1.get("id1"));
+    }
+
+    @Test
+    public void testJoinOnIdentifierThatIsNotCommon() {
+
+        Dataset ds1 = mock(Dataset.class);
+        DataStructure s1 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("id2", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .build();
+        when(ds1.getDataStructure()).thenReturn(s1);
+
+        Dataset ds2 = mock(Dataset.class);
+        DataStructure s2 = DataStructure.builder()
+                .put("id1", Role.IDENTIFIER, Long.class)
+                .put("me1", Role.MEASURE, Long.class)
+                .build();
+        when(ds2.getDataStructure()).thenReturn(s2);
+
+        assertThatThrownBy(() ->
+            new TestAbstractJoinOperation(ImmutableMap.of("ds1", ds1, "ds2", ds2),
+                    ImmutableMap.of("id2", s1.get("id2")))
+        ).isNotNull().hasMessageContaining("join operation").hasMessageContaining("not a common identifier");
+    }
+
     private static class TestAbstractJoinOperation extends AbstractJoinOperation {
 
         List<List<DataPoint>> leftMiss = Lists.newArrayList();
@@ -430,26 +501,26 @@ public class AbstractJoinOperationTest {
 
 
         public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets) {
-            super(namedDatasets, Collections.emptySet());
+            super(namedDatasets, Collections.emptyMap());
         }
 
-        public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets, Set<Component> identifiers) {
+        public TestAbstractJoinOperation(Map<String, Dataset> namedDatasets, Map<String, Component> identifiers) {
             super(namedDatasets, identifiers);
         }
 
         @Override
-        public Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
-            return Optional.empty();
+        public Stream<DataPoint> computeData(Ordering orders, Filtering filtering, Set<String> components) {
+            return null;
         }
 
         @Override
-        public Optional<Map<String, Integer>> getDistinctValuesCount() {
-            return Optional.empty();
+        public FilteringSpecification computeRequiredFiltering(FilteringSpecification filtering) {
+            return null;
         }
 
         @Override
-        public Optional<Long> getSize() {
-            return Optional.empty();
+        public OrderingSpecification computeRequiredOrdering(OrderingSpecification filtering) {
+            return null;
         }
     }
 }

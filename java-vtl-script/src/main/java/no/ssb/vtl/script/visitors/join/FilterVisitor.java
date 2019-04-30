@@ -23,7 +23,7 @@ package no.ssb.vtl.script.visitors.join;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.model.VTLExpression;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.FilterOperation;
+import no.ssb.vtl.script.operations.filter.FilterOperation;
 import no.ssb.vtl.script.operations.join.ComponentBindings;
 import no.ssb.vtl.script.visitors.ExpressionVisitor;
 import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;

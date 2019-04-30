@@ -27,7 +27,6 @@ import java.util.List;
 
 public class VTLScriptEngineFactory implements ScriptEngineFactory {
 
-
     @Override
     public String getEngineName() {
         return "VTLJava";

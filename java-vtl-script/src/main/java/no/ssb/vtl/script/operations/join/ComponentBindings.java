@@ -71,6 +71,10 @@ public class ComponentBindings extends SimpleBindings {
         return super.put(name, wrapped);
     }
 
+    /**
+     * Creates a Bindings that contains the unique components of this join operation and the
+     * datasets.
+     */
     public ComponentBindings(Map<String, Dataset> namedDatasets) {
         List<ComponentBindings> bindingsList = Lists.newArrayList();
         for (String datasetName : namedDatasets.keySet()) {
@@ -85,7 +89,7 @@ public class ComponentBindings extends SimpleBindings {
         for (ComponentBindings componentBindings : bindingsList) {
             Set<String> identifiers = componentBindings.keySet();
             for (String identifier : identifiers) {
-                if (ambiguous.contains(identifier))
+                    if (ambiguous.contains(identifier))
                     continue;
 
                 if (unique.contains(identifier)) {
@@ -107,7 +111,6 @@ public class ComponentBindings extends SimpleBindings {
         }
     }
 
-
     public ComponentBindings(Dataset dataset) {
         checkNotNull(dataset);
         for (Entry<String, Component> entry : dataset.getDataStructure().entrySet()) {
@@ -116,7 +119,7 @@ public class ComponentBindings extends SimpleBindings {
         }
     }
 
-    private ComponentBindings() {
+    ComponentBindings() {
         // used by copyOf.
     }
 
@@ -155,6 +158,14 @@ public class ComponentBindings extends SimpleBindings {
         @Override
         public Class<? extends VTLObject> getVTLType() {
             return this.type;
+        }
+
+        @Override
+        public String toString() {
+            return "ComponentReference{" +
+                    "component=" + component +
+                    ", type=" + type +
+                    '}';
         }
     }
 }

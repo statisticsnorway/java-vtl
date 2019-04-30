@@ -30,7 +30,7 @@ public abstract class AbstractNullFirstExpression extends AbstractBinaryExpressi
     }
 
     @Override
-    public final VTLObject resolve(Bindings bindings) {
+    public VTLObject resolve(Bindings bindings) {
         VTLObject leftOperand = getLeftOperand().resolve(bindings);
         VTLObject rightOperand = getRightOperand().resolve(bindings);
 

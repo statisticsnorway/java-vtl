@@ -299,11 +299,6 @@ public class DataStructure extends ForwardingMap<String, Component> {
         return map;
     }
 
-    public int indexOf(Component component) {
-        return indexListCache.indexOf(component);
-    }
-
-
     /**
      * Creates a new {@link DataPoint} for the given names and values.
      * <p>

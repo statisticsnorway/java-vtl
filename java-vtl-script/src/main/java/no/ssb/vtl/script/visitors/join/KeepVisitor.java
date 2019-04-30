@@ -23,7 +23,7 @@ package no.ssb.vtl.script.visitors.join;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.KeepOperation;
+import no.ssb.vtl.script.operations.drop.KeepOperation;
 import no.ssb.vtl.script.visitors.ComponentVisitor;
 import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;
 
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Visit the keep clauses.
+ * Visit the keep getClauses.
  */
 public class KeepVisitor extends VTLDatasetExpressionVisitor<KeepOperation> {
 

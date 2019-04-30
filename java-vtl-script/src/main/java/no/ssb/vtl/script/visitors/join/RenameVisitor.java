@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.RenameOperation;
+import no.ssb.vtl.script.operations.rename.RenameOperation;
 import no.ssb.vtl.script.visitors.ComponentVisitor;
 import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;
 
@@ -50,11 +50,12 @@ public class RenameVisitor extends VTLDatasetExpressionVisitor<RenameOperation> 
 
     @Override
     public RenameOperation visitJoinRenameExpression(VTLParser.JoinRenameExpressionContext ctx) {
-        ImmutableMap.Builder<Component, String> newNames = ImmutableMap.builder();
+        ImmutableMap.Builder<String, String> newNames = ImmutableMap.builder();
         for (VTLParser.JoinRenameParameterContext renameParam : ctx.joinRenameParameter()) {
             Component component = componentVisitor.visit(renameParam.from);
+            String actualName = dataset.getDataStructure().getName(component);
             String to = removeQuoteIfNeeded(renameParam.to.getText());
-            newNames.put(component, to);
+            newNames.put(actualName, to);
         }
         return new RenameOperation(dataset, newNames.build());
     }

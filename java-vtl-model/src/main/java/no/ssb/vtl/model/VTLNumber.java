@@ -30,7 +30,17 @@ public abstract class VTLNumber<T extends Number> extends VTLObject<T> {
 
     @Override
     public abstract T get();
-    
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof VTLNumber) {
+            VTLNumber that = ((VTLNumber) o);
+            return Double.compare(this.get().doubleValue(), that.get().doubleValue());
+        } else {
+            return super.compareTo(o);
+        }
+    }
+
     public VTLNumber add(VTLNumber addend) {
         return add(addend.get());
     }

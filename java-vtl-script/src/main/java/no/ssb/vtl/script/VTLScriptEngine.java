@@ -123,6 +123,7 @@ public class VTLScriptEngine extends AbstractScriptEngine {
 
     public VTLParser.StartContext parse(Reader reader, Consumer<VTLScriptException> errorConsumer) throws IOException {
         // TODO: Change to CharStreams.fromString() when #1977 makes it to release.
+        // TODO: Should be fixed with 4.7.1.
         VTLLexer lexer = new VTLLexer(new ANTLRInputStream(reader));
         VTLParser parser = new VTLParser(new CommonTokenStream(lexer));
 

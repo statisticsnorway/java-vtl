@@ -25,7 +25,7 @@ import com.google.common.collect.Sets;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.Dataset;
 import no.ssb.vtl.parser.VTLParser;
-import no.ssb.vtl.script.operations.UnfoldOperation;
+import no.ssb.vtl.script.operations.unfold.UnfoldOperation;
 import no.ssb.vtl.script.visitors.ComponentVisitor;
 import no.ssb.vtl.script.visitors.LiteralVisitor;
 import no.ssb.vtl.script.visitors.VTLDatasetExpressionVisitor;

@@ -9,9 +9,9 @@ package no.ssb.vtl.script;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,11 @@ package no.ssb.vtl.script;
  * =========================LICENSE_END==================================
  */
 
-import no.ssb.vtl.script.VTLScriptEngine;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +34,7 @@ public class VTLScriptEngineFactoryTest {
     private ScriptEngineManager factory;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // create a script engine manager
         factory = new ScriptEngineManager();
     }
@@ -59,6 +59,8 @@ public class VTLScriptEngineFactoryTest {
 
     @Test
     public void testFactoriesContainVTL() throws Exception {
-        assertThat(factory.getEngineFactories());
+        assertThat(factory.getEngineFactories()).extracting(ScriptEngineFactory::getEngineName).contains(
+                "VTLJava"
+        );
     }
 }

@@ -25,8 +25,8 @@ import com.google.common.collect.ImmutableSet;
 import no.ssb.vtl.model.Component;
 import no.ssb.vtl.model.DataPoint;
 import no.ssb.vtl.model.Dataset;
-import no.ssb.vtl.model.Order;
 import no.ssb.vtl.model.StaticDataset;
+import no.ssb.vtl.model.VtlOrdering;
 import no.ssb.vtl.script.VTLDataset;
 import no.ssb.vtl.script.VTLScriptEngine;
 import no.ssb.vtl.script.operations.hierarchy.HierarchyOperation;
@@ -87,16 +87,16 @@ public class ForeachOperationTest {
                     "t1", t1.get(),
                     "t2", t2.get()
             );
-            ImmutableSet<Component> identifier = ImmutableSet.of(
-                    t1.get().getDataStructure().get("year"),
-                    t1.get().getDataStructure().get("id")
+            ImmutableMap<String, Component> identifier = ImmutableMap.of(
+                    "t1.year", t1.get().getDataStructure().get("year"),
+                    "t1.id", t1.get().getDataStructure().get("id")
             );
             return VTLDataset.of(new InnerJoinOperation(namedDataset, identifier));
         });
         System.out.println(foreachOperation.getDataStructure());
 
-        Order orderedByYear = Order.create(foreachOperation.getDataStructure())
-                .put("year", Order.Direction.DESC).build();
+        VtlOrdering orderedByYear = VtlOrdering.using(foreachOperation)
+                .desc("year").build();
 
         Optional<Stream<DataPoint>> data = foreachOperation.getData(orderedByYear);
         assertThat(data).isNotEmpty();
@@ -121,58 +121,58 @@ public class ForeachOperationTest {
 
     private Dataset createInnerJoin2() {
         return StaticDataset.create()
-                    .addComponent("year", IDENTIFIER, Long.class)
-                    .addComponent("id", IDENTIFIER, Long.class)
-                    .addComponent("measure", MEASURE, String.class)
-                    .addComponent("attribute", ATTRIBUTE, String.class)
+                .addComponent("year", IDENTIFIER, Long.class)
+                .addComponent("id", IDENTIFIER, Long.class)
+                .addComponent("measure", MEASURE, String.class)
+                .addComponent("attribute", ATTRIBUTE, String.class)
 
-                    .addPoints(2000L, 1L, "m1", "t2-2000")
-                    .addPoints(2000L, 2L, "m2", "t2-2000")
-                    .addPoints(2000L, 3L, "m3", "t2-2000")
-                    .addPoints(2000L, 4L, "m4", "t2-2000")
+                .addPoints(2000L, 1L, "m1", "t2-2000")
+                .addPoints(2000L, 2L, "m2", "t2-2000")
+                .addPoints(2000L, 3L, "m3", "t2-2000")
+                .addPoints(2000L, 4L, "m4", "t2-2000")
 
-                    .addPoints(2002L, 1L, "m1", "t2-2002")
-                    .addPoints(2002L, 2L, "m2", "t2-2002")
-                    .addPoints(2002L, 3L, "m3", "t2-2002")
-                    .addPoints(2002L, 4L, "m4", "t2-2002")
+                .addPoints(2002L, 1L, "m1", "t2-2002")
+                .addPoints(2002L, 2L, "m2", "t2-2002")
+                .addPoints(2002L, 3L, "m3", "t2-2002")
+                .addPoints(2002L, 4L, "m4", "t2-2002")
 
-                    .addPoints(2003L, 1L, "m1", "t2-2003")
-                    .addPoints(2003L, 2L, "m2", "t2-2003")
-                    .addPoints(2003L, 3L, "m3", "t2-2003")
+                .addPoints(2003L, 1L, "m1", "t2-2003")
+                .addPoints(2003L, 2L, "m2", "t2-2003")
+                .addPoints(2003L, 3L, "m3", "t2-2003")
 
-                    .addPoints(2004L, 1L, "m1", "t2-2004")
-                    .addPoints(2004L, 2L, "m2", "t2-2004")
-                    .addPoints(2004L, 3L, "m3", "t2-2004")
+                .addPoints(2004L, 1L, "m1", "t2-2004")
+                .addPoints(2004L, 2L, "m2", "t2-2004")
+                .addPoints(2004L, 3L, "m3", "t2-2004")
 
-                    .build();
+                .build();
     }
 
     private Dataset createInnerJoin1() {
         return StaticDataset.create()
-                    .addComponent("year", IDENTIFIER, Long.class)
-                    .addComponent("id", IDENTIFIER, Long.class)
-                    .addComponent("measure", MEASURE, String.class)
-                    .addComponent("attribute", ATTRIBUTE, String.class)
+                .addComponent("year", IDENTIFIER, Long.class)
+                .addComponent("id", IDENTIFIER, Long.class)
+                .addComponent("measure", MEASURE, String.class)
+                .addComponent("attribute", ATTRIBUTE, String.class)
 
-                    .addPoints(2000L, 1L, "m1", "t1-2000")
-                    .addPoints(2000L, 2L, "m2", "t1-2000")
-                    .addPoints(2000L, 3L, "m3", "t1-2000")
+                .addPoints(2000L, 1L, "m1", "t1-2000")
+                .addPoints(2000L, 2L, "m2", "t1-2000")
+                .addPoints(2000L, 3L, "m3", "t1-2000")
 
-                    .addPoints(2001L, 1L, "m1", "t1-2001")
-                    .addPoints(2001L, 2L, "m2", "t1-2001")
-                    .addPoints(2001L, 3L, "m3", "t1-2001")
-                    .addPoints(2001L, 4L, "m4", "t1-2001")
+                .addPoints(2001L, 1L, "m1", "t1-2001")
+                .addPoints(2001L, 2L, "m2", "t1-2001")
+                .addPoints(2001L, 3L, "m3", "t1-2001")
+                .addPoints(2001L, 4L, "m4", "t1-2001")
 
-                    .addPoints(2003L, 1L, "m1", "t1-2003")
-                    .addPoints(2003L, 2L, "m2", "t1-2003")
-                    .addPoints(2003L, 3L, "m3", "t1-2003")
-                    .addPoints(2003L, 4L, "m4", "t1-2003")
+                .addPoints(2003L, 1L, "m1", "t1-2003")
+                .addPoints(2003L, 2L, "m2", "t1-2003")
+                .addPoints(2003L, 3L, "m3", "t1-2003")
+                .addPoints(2003L, 4L, "m4", "t1-2003")
 
-                    .addPoints(2004L, 1L, "m1", "t1-2004")
-                    .addPoints(2004L, 2L, "m2", "t1-2004")
-                    .addPoints(2004L, 3L, "m3", "t1-2004")
+                .addPoints(2004L, 1L, "m1", "t1-2004")
+                .addPoints(2004L, 2L, "m2", "t1-2004")
+                .addPoints(2004L, 3L, "m3", "t1-2004")
 
-                    .build();
+                .build();
     }
 
     @Test
@@ -183,23 +183,23 @@ public class ForeachOperationTest {
                 .addComponent("measure", MEASURE, Long.class)
                 .addComponent("attribute", ATTRIBUTE, String.class)
 
-                .addPoints(2000L, "m1", 1L , "t1-2000")
-                .addPoints(2000L, "m2", 2L , "t1-2000")
-                .addPoints(2000L, "m3", 3L , "t1-2000")
+                .addPoints(2000L, "m1", 1L, "t1-2000")
+                .addPoints(2000L, "m2", 2L, "t1-2000")
+                .addPoints(2000L, "m3", 3L, "t1-2000")
 
-                .addPoints(2001L, "m1", 1L , "t1-2001")
-                .addPoints(2001L, "m2", 2L , "t1-2001")
-                .addPoints(2001L, "m3", 3L , "t1-2001")
-                .addPoints(2001L, "m4", 4L , "t1-2001")
+                .addPoints(2001L, "m1", 1L, "t1-2001")
+                .addPoints(2001L, "m2", 2L, "t1-2001")
+                .addPoints(2001L, "m3", 3L, "t1-2001")
+                .addPoints(2001L, "m4", 4L, "t1-2001")
 
-                .addPoints(2003L, "m1", 1L , "t1-2003")
-                .addPoints(2003L, "m2", 2L , "t1-2003")
-                .addPoints(2003L, "m3", 3L , "t1-2003")
-                .addPoints(2003L, "m4", 4L , "t1-2003")
+                .addPoints(2003L, "m1", 1L, "t1-2003")
+                .addPoints(2003L, "m2", 2L, "t1-2003")
+                .addPoints(2003L, "m3", 3L, "t1-2003")
+                .addPoints(2003L, "m4", 4L, "t1-2003")
 
-                .addPoints(2004L, "m1", 1L , "t1-2004")
-                .addPoints(2004L, "m2", 2L , "t1-2004")
-                .addPoints(2004L, "m3", 3L , "t1-2004")
+                .addPoints(2004L, "m1", 1L, "t1-2004")
+                .addPoints(2004L, "m2", 2L, "t1-2004")
+                .addPoints(2004L, "m3", 3L, "t1-2004")
 
                 .build();
 
@@ -231,9 +231,8 @@ public class ForeachOperationTest {
         foreachOperation.getData().forEach(System.out::println);
         System.out.println(foreachOperation.getDataStructure());
 
-        Order orderedByMeasureAndYearDesc = Order.create(foreachOperation.getDataStructure())
-                .put("measure", Order.Direction.DESC)
-                .put("year", Order.Direction.DESC)
+        VtlOrdering orderedByMeasureAndYearDesc = VtlOrdering.using(foreachOperation)
+                .desc("measure", "year")
                 .build();
 
         Optional<Stream<DataPoint>> data = foreachOperation.getData(

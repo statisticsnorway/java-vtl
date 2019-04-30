@@ -7,7 +7,7 @@
     <parent>
         <artifactId>java-vtl-parent</artifactId>
         <groupId>no.ssb.vtl</groupId>
-        <version>0.1.12-2</version>
+        <version>0.1.13-SNAPSHOT</version>
     </parent>
 
     <artifactId>java-vtl-script</artifactId>
@@ -22,6 +22,13 @@
         <dependency>
             <groupId>no.ssb.vtl</groupId>
             <artifactId>java-vtl-parser</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.netflix.spectator/spectator-api -->
+        <dependency>
+            <groupId>com.netflix.spectator</groupId>
+            <artifactId>spectator-api</artifactId>
+            <version>0.80.1</version>
         </dependency>
 
         <!-- Needed to deserialize some test data -->
@@ -47,6 +54,13 @@
         <dependency>
             <groupId>org.brotli</groupId>
             <artifactId>dec</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.25</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

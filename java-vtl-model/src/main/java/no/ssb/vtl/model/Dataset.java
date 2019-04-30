@@ -9,9 +9,9 @@ package no.ssb.vtl.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,28 +19,6 @@ package no.ssb.vtl.model;
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-
-/*-
- * #%L
- * java-vtl-model
- * %%
- * Copyright (C) 2016 Hadrien Kohl
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import com.google.common.base.Predicate;
 
 import java.util.Map;
 import java.util.Optional;
@@ -72,21 +50,21 @@ import java.util.stream.Stream;
  * <p>
  * Data Strucure:
  * <p>
- * The data structure of a dataset is
+ * The data structure of a dataset contains the columns (variables) available in each {@link DataPoint}
  * <p>
  * Data stream:
  * <p>
  * The observations (data points) can be requested by calling the {@link #getData()} functions. The returned value is a
- * new, independent and immutable stream of information.
+ * new independent and immutable stream of information.
  * <p>
  * Sorting and filtering:
  * <p>
- * Independent sorting and filtering of the data points for a stream can be requested with the
- * {@link Dataset#getData(Order, Filtering, Set)} methods. This allows optimized implementations of operations like
- * join or union.
+ * The data points returned by a stream can be ordered and filtered useing the
+ * {@link Dataset#getData(Ordering, Filtering, Set)} methods.
+ * This is required to optimize the implementations of vtl operation.
  */
 public interface Dataset {
-    
+
     /**
      * Creates a new independent, immutable stream of DataPoints.
      * <p>
@@ -119,13 +97,13 @@ public interface Dataset {
      * Implementations can decide not to allow sorting by returning {@link Optional#empty()}.
      * <p>
      * If supported, the {@link Spliterator} of the returned {@link Stream} <b>must</b> be {@link Spliterator#SORTED}
-     * using the given {@link Order}.
+     * using the given {@link Ordering}.
      *
      * @param orders    the order in which the {@link DataPoint}s should be returned.
      * @param filtering the filtering on the {@link Component}s of the {@link DataPoint}s
      * @return a <b>sorted</b> stream of {@link DataPoint}s if sorting is supported.
      */
-    default Optional<Stream<DataPoint>> getData(Order orders, Filtering filtering, Set<String> components) {
+    default Optional<Stream<DataPoint>> getData(Ordering orders, Filtering filtering, Set<String> components) {
         return Optional.of(getData().sorted(orders).filter(filtering).map(o -> {
             // TODO
             return o;
@@ -138,9 +116,9 @@ public interface Dataset {
      * Calling this method is equivalent to
      * <code>getData(ordering, Filtering.ALL, getDataStructure.keySet())</code>
      *
-     * @see Filtering#getData(Order, Filtering, Set)
+     * @see Dataset#getData(Ordering, Filtering, Set)
      */
-    default Optional<Stream<DataPoint>> getData(Order order) {
+    default Optional<Stream<DataPoint>> getData(Ordering order) {
         DataStructure dataStructure = getDataStructure();
         return getData(order, Filtering.ALL, dataStructure.keySet());
     }
@@ -151,11 +129,11 @@ public interface Dataset {
      * Calling this method is equivalent to
      * <code>getData(Ordering.DEFAULT, filtering, getDataStructure.keySet())</code>
      *
-     * @see Filtering#getData(Order, Filtering, Set)
+     * @see Dataset#getData(Ordering, Filtering, Set)
      */
     default Optional<Stream<DataPoint>> getData(Filtering filtering) {
         DataStructure dataStructure = getDataStructure();
-        return getData(Order.createDefault(dataStructure), filtering, dataStructure.keySet());
+        return getData(Ordering.ANY, filtering, dataStructure.keySet());
     }
 
     /**
@@ -164,23 +142,16 @@ public interface Dataset {
      * Calling this method is equivalent to
      * <code>getData(Ordering.DEFAULT, filtering, getDataStructure.keySet())</code>
      *
-     * @see Filtering#getData(Order, Filtering, Set)
+     * @see Dataset#getData(Ordering, Filtering, Set)
      */
     default Optional<Stream<DataPoint>> getData(Set<String> components) {
         DataStructure dataStructure = getDataStructure();
-        return getData(Order.createDefault(dataStructure), Filtering.ALL, dataStructure.keySet());
+        return getData(Ordering.ANY, Filtering.ALL, dataStructure.keySet());
     }
 
     /**
      * Returns the data structure of the DataSet.
      */
     DataStructure getDataStructure();
-
-    /**
-     * Represent the filtering of the {@link DataPoint}s in a Dataset.
-     */
-    interface Filtering extends Predicate<DataPoint> {
-        Filtering ALL = dataPoint -> true;
-    }
 
 }

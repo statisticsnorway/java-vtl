@@ -109,4 +109,13 @@ public class AggregationSumFunctionTest {
         assertThat(result).isEqualTo(VTLNumber.of(number1 + number2));
         assertThat(result.getClass().getSuperclass()).isEqualTo(VTLFloat.class);
     }
+
+    @Test
+    public void testReturnType() {
+        AggregationSumFunction function = new AggregationSumFunction();
+        assertThat(function.getVTLReturnTypeFor(Integer.class)).isEqualTo(Integer.class);
+        assertThat(function.getVTLReturnTypeFor(Long.class)).isEqualTo(Long.class);
+        assertThat(function.getVTLReturnTypeFor(Double.class)).isEqualTo(Double.class);
+        assertThat(function.getVTLReturnTypeFor(Float.class)).isEqualTo(Float.class);
+    }
 }

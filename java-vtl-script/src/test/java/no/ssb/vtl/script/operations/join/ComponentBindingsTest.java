@@ -33,7 +33,6 @@ import no.ssb.vtl.model.VTLString;
 import no.ssb.vtl.model.VTLTyped;
 import org.junit.Test;
 
-import javax.script.Bindings;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ComponentBindingsTest {
 
     @Test
-    public void testDatasetBindings() throws Exception {
+    public void testDatasetBindings() {
 
         Dataset dataset = StaticDataset.create()
                 .addComponent("c1", Component.Role.IDENTIFIER, String.class)
@@ -64,7 +63,25 @@ public class ComponentBindingsTest {
     }
 
     @Test
-    public void testJoinBindings() throws Exception {
+    public void testJoinBindingsOneDataset() {
+
+        StaticDataset t1 = StaticDataset.create()
+                .addComponent("id1", Component.Role.IDENTIFIER, String.class)
+                .addComponent("id2", Component.Role.IDENTIFIER, Long.class)
+                .addComponent("uni1", Component.Role.IDENTIFIER, Double.class)
+                .addComponent("m1", Component.Role.MEASURE, Instant.class)
+                .addComponent("a1", Component.Role.MEASURE, Boolean.class)
+                .build();
+
+        ComponentBindings result = new ComponentBindings(ImmutableMap.of(
+                "t1", t1
+        ));
+
+        assertThat(result).containsOnlyKeys("id1", "id2", "uni1", "m1", "a1", "t1");
+
+    }
+    @Test
+    public void testJoinBindings() {
 
         StaticDataset t1 = StaticDataset.create()
                 .addComponent("id1", Component.Role.IDENTIFIER, String.class)
@@ -93,7 +110,7 @@ public class ComponentBindingsTest {
                 .addComponent("t2", Component.Role.MEASURE, Boolean.class)
                 .build();
 
-        Bindings result = AbstractJoinOperation.createJoinScope(ImmutableMap.of(
+        ComponentBindings result = new ComponentBindings(ImmutableMap.of(
                 "t1", t1,
                 "t2", t2,
                 "t3", t3

@@ -70,6 +70,7 @@ public class DataPointBindings implements Bindings {
     }
 
     public DataPointBindings setDataPoint(DataPoint dataPoint) {
+        // TODO: Avoid instantiating an object.
         this.mapView = structure.asMap(dataPoint);
         this.dataPoint = dataPoint;
         return this;

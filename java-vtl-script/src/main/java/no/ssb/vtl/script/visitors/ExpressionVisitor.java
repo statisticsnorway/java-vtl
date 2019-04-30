@@ -34,6 +34,8 @@ import no.ssb.vtl.script.error.VTLRuntimeException;
 import no.ssb.vtl.script.expressions.FunctionExpression;
 import no.ssb.vtl.script.expressions.IfThenElseExpression;
 import no.ssb.vtl.script.expressions.LiteralExpression;
+import no.ssb.vtl.script.expressions.MembershipExpression;
+import no.ssb.vtl.script.expressions.VariableExpression;
 import no.ssb.vtl.script.expressions.arithmetic.AdditionExpression;
 import no.ssb.vtl.script.expressions.arithmetic.DivisionExpression;
 import no.ssb.vtl.script.expressions.arithmetic.MultiplicationExpression;
@@ -41,6 +43,8 @@ import no.ssb.vtl.script.expressions.arithmetic.SubtractionExpression;
 import no.ssb.vtl.script.expressions.equality.EqualExpression;
 import no.ssb.vtl.script.expressions.equality.GraterThanExpression;
 import no.ssb.vtl.script.expressions.equality.GreaterOrEqualExpression;
+import no.ssb.vtl.script.expressions.equality.IsNotNullExpression;
+import no.ssb.vtl.script.expressions.equality.IsNullExpression;
 import no.ssb.vtl.script.expressions.equality.LesserOrEqualExpression;
 import no.ssb.vtl.script.expressions.equality.LesserThanExpression;
 import no.ssb.vtl.script.expressions.equality.NotEqualExpression;
@@ -116,9 +120,9 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         VTLExpression operand = visit(ctx.expression());
         switch (ctx.op.getType()) {
             case VTLParser.ISNOTNULL:
-                return getIsNullExpression(object -> object.get() != null, operand);
+                return new IsNotNullExpression(operand);
             case VTLParser.ISNULL:
-                return getIsNullExpression(object -> object.get() == null, operand);
+                return new IsNullExpression(operand);
             default:
                 throw new ParseCancellationException("unknown operator " + ctx.op.getText());
         }
@@ -189,6 +193,8 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
     }
 
     private VTLExpression getEqualityExpression(VTLParser.BinaryExprContext ctx) {
+
+        // TODO: Check that both expression can be compared.
         VTLExpression leftExpression = visit(ctx.left);
         VTLExpression rightExpression = visit(ctx.right);
 
@@ -259,21 +265,6 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         return expression;
     }
 
-    private VTLExpression getIsNullExpression(Predicate<VTLObject> predicate, VTLExpression expression) {
-        return new VTLExpression() {
-            @Override
-            public VTLObject resolve(Bindings bindings) {
-                VTLObject object = expression.resolve(bindings);
-                return VTLBoolean.of(predicate.test(object));
-            }
-
-            @Override
-            public Class getVTLType() {
-                return VTLBoolean.class;
-            }
-        };
-    }
-
     @Override
     public VTLExpression visitNvlFunction(VTLParser.NvlFunctionContext ctx) {
         return nativeFunctionsVisitor.visit(ctx);
@@ -302,19 +293,7 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
             Bindings bindings = (Bindings) object;
             String rightIdentifier = checkVariableExist(bindings, ctx.right);
             VTLTyped typed = (VTLTyped) bindings.get(rightIdentifier);
-            return new VTLExpression() {
-
-                @Override
-                public VTLObject resolve(Bindings bindings) {
-                    return (VTLObject) ((Bindings) bindings.get(leftIdentifier)).get(rightIdentifier);
-                }
-
-                @Override
-                public Class getVTLType() {
-                    return typed.getVTLType();
-                }
-
-            };
+            return new MembershipExpression(typed.getVTLType(), leftIdentifier, rightIdentifier);
         } else {
             throw new UnsupportedOperationException("[" + leftIdentifier + "] was not a dataset");
         }
@@ -325,23 +304,8 @@ public class ExpressionVisitor extends VTLBaseVisitor<VTLExpression> {
         String identifier = checkVariableExist(scope, ctx);
         Object object = scope.get(identifier);
         if (object instanceof VTLTyped) {
-
-            // Save the type and identifier.
-            // TODO: VariableReference extends VTLExpression2 ?
-            VTLTyped typed = (VTLTyped) object;
-            return new VTLExpression() {
-
-                @Override
-                public Class<?> getVTLType() {
-                    return typed.getVTLType();
-                }
-
-                @Override
-                public VTLObject resolve(Bindings bindings) {
-                    return (VTLObject) bindings.get(identifier);
-                }
-            };
-
+            Class type = ((VTLTyped) object).getVTLType();
+            return new VariableExpression(type, identifier);
         }
         if (object instanceof Dataset) {
             return new VTLExpression() {
