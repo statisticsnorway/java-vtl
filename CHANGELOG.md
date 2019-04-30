@@ -6,7 +6,15 @@
 
 ### Changed
 
+## 0.1.12-2 - 2019-03-21
+
+### Changed
+
+* Update project dependencies
+
 ## 0.1.12-1 - 2019-03-05
+
+### Changed 
 
 * Update URLs to internal SSB distribution repos
 
