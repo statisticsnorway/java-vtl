@@ -2,14 +2,11 @@
 [travis-link]: https://travis-ci.org/statisticsnorway/java-vtl/branches
 [gitter-link]: https://gitter.im/java-vtl/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link
 
-[codacy-img]: https://img.shields.io/codacy/grade/e187c210f99b4c179550b9bcb1c92860/develop.svg
 [codecov-img]: https://codecov.io/gh/statisticsnorway/java-vtl/branch/develop/graph/badge.svg
 [travis-img]: https://img.shields.io/travis/statisticsnorway/java-vtl/develop.svg
 [gitter-img]: https://img.shields.io/gitter/room/java-vtl/Lobby.svg
 
-
 [![Build Status][travis-img]][travis-link]
-[![Codacy Badge][codacy-img]][codacy-link]
 [![Codecov coverage][codecov-img]][codecov-link]
 [![Gitter][gitter-img]][gitter-link]
 
