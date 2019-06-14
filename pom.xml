@@ -7,7 +7,7 @@
     <groupId>no.ssb.vtl</groupId>
     <artifactId>java-vtl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.13-SNAPSHOT</version>
+    <version>0.1.14-SNAPSHOT</version>
 
     <modules>
         <module>java-vtl-model</module>

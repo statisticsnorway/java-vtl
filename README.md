@@ -38,7 +38,7 @@ Add a dependency to the maven project
 <dependency>
     <groupId>no.ssb.vtl</groupId>
     <artifactId>java-vtl-script</artifactId>
-    <version>0.1.13-SNAPSHOT</version>
+    <version>0.1.14-SNAPSHOT</version>
 </dependency>
 ```
 
