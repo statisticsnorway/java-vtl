@@ -7,7 +7,7 @@
     <parent>
         <groupId>no.ssb.vtl</groupId>
         <artifactId>java-vtl-parent</artifactId>
-        <version>0.1.12-2</version>
+        <version>0.1.12-3</version>
     </parent>
 
     <artifactId>java-vtl-coverage</artifactId>
@@ -32,7 +32,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.4</version>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
