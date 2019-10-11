@@ -58,13 +58,15 @@ public class SumHierarchyAccumulator implements HierarchyAccumulator {
             case UNION:
                 return (left, right) -> {
                     VTLNumber leftNumber = (VTLNumber) left; // Always identity.
-                    VTLNumber rightNumber = right.get() == null ? VTLNumber.of(0) : (VTLNumber) right; // $COVERAGE-IGNORE$
+                    VTLNumber rightNumber =
+                            right.get() == null ? VTLNumber.of(0) : (VTLNumber) right;
                     return leftNumber.add(rightNumber);
                 };
             case COMPLEMENT:
                 return (left, right) -> {
                     VTLNumber leftNumber = (VTLNumber) left; // Always identity.
-                    VTLNumber rightNumber = right.get() == null ? VTLNumber.of(0) : (VTLNumber) right; // $COVERAGE-IGNORE$
+                    VTLNumber rightNumber =
+                            right.get() == null ? VTLNumber.of(0) : (VTLNumber) right;
                     return leftNumber.subtract(rightNumber.get());
                 };
             default:

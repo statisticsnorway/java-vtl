@@ -30,6 +30,10 @@ import static java.lang.String.*;
 // TODO: The spec specifies that date format should be configurable.
 public abstract class VTLDate extends VTLObject<Instant> implements VTLTyped<VTLDate> {
 
+    private VTLDate() {
+        // private
+    }
+
     @Override
     public Class<VTLDate> getVTLType() {
         return VTLDate.class;

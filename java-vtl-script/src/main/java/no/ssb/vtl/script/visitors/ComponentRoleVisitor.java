@@ -34,6 +34,10 @@ public final class ComponentRoleVisitor extends VTLBaseVisitor<Component.Role> {
         return instance;
     }
 
+    private ComponentRoleVisitor() {
+        // singleton.
+    }
+
     @Override
     public Component.Role visitComponentRole(VTLParser.ComponentRoleContext ctx) {
         if (ctx == null || ctx.role == null)
