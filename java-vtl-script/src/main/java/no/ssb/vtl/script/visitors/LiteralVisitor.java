@@ -38,10 +38,6 @@ public final class LiteralVisitor extends VTLBaseVisitor<VTLObject> {
     private static final String QUOTE_CHAR = "(?<!\")\"(?!\")";
     private static final String ESCAPED_QUOTE_CHAR = "\"\"";
 
-    private LiteralVisitor() {
-        // private
-    }
-
     public static LiteralVisitor getInstance() {
         return instance;
     }

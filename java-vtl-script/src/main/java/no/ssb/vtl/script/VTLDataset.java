@@ -31,10 +31,6 @@ public abstract class VTLDataset extends VTLObject<Dataset> implements VTLTyped<
         return VTLDataset.class;
     }
 
-    private VTLDataset() {
-        // private
-    }
-
     public static VTLDataset of(Dataset dataset) {
         return new VTLDataset() {
             @Override

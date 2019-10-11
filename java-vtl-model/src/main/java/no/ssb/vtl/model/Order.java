@@ -88,7 +88,7 @@ public final class Order extends ForwardingMap<Component, Order.Direction> imple
         Direction v;
         return (((v = get(get(key))) != null) || containsKey(key))
                 ? v
-                : defaultValue;
+                : defaultValue; // $COVERAGE-IGNORE$
     }
 
     @Override
