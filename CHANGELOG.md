@@ -6,6 +6,11 @@
 
 ### Changed
 
+## 0.1.12-3 - 2019-10-11
+
+### Changed
+
+* Java 11 upgrade
 ## 0.1.12-2 - 2019-03-21
 
 ### Changed
