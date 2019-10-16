@@ -284,11 +284,10 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.8.1</version>
 
                 <configuration>
-                    <source>1.8</source>
-                    <target>11</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
 
@@ -313,10 +312,9 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.8.1</version>
                     <configuration>
-                        <source>1.8</source>
-                        <target>11</target>
+                        <release>11</release>
                     </configuration>
                 </plugin>
 
