@@ -1,0 +1,60 @@
+name: $(Build.SourceBranch)-$(date:yyyyMMdd)$(rev:.r)
+# Pipeline triggers on any branch and tag
+trigger:
+  branches:
+    include:
+      - '*'
+  tags:
+    include:
+      - '*'
+
+resources:
+  containers:
+    - container: 'ubuntu_container_for_build_deply_to_nexus'
+      image: 'ubuntu:latest'
+  repositories:
+    - repository: templates
+      type: github
+      name: statisticsnorway/azure-pipelines-templates
+      ref: refs/tags/1.1.11
+      endpoint: statisticsnorway (6)
+
+# Pipeline will be run on this base image
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Variables global to this pipeline
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables
+variables:
+  # Variables defined in Pipelines->Library->Variable Groups in your project in
+  # Azure Pipelines
+  - group: Hemmeligheter
+  # Variables defined here
+  - name:  MAVEN_CACHE_FOLDER
+    value: $(Pipeline.Workspace)/.m2/repository
+  - name: MAVEN_OPTS
+    value: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+
+
+
+# Job which runs mvn build, mvn install,
+jobs:
+  - job: buildTest
+    container: 'maven:3-adoptopenjdk-11'
+    displayName: 'compile deploy app'
+    # Job condition: Run these jobs on any branch, but not on tags
+    condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    # Steps in this Job
+    steps:
+      # Authenticate Maven to Nexus using predefined Service Connections
+      # (Project Settings->Pipelines->Service Connections)
+      - task: MavenAuthenticate@0
+        displayName: 'Maven authenticate'
+        inputs:
+          mavenServiceConnections: 'mvnSsbBipPublic, mvnSsbBipReleases, mvnSsbBipSnapshots'
+
+      #Maven caching to speed up pipeline build time
+      - template: maven/task-cache.yml@templates
+
+      # Deploy artifact to Nexus
+      - template: maven/task-install-and-deploy-to-nexus.yml@templates
