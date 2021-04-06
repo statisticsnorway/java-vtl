@@ -4,6 +4,12 @@
 
 ### Added
 
+### Changed
+
+## 0.1.13 - 2021-04-06
+
+### Added
+
 * Add filter propagation logic
 * Add filter propagation on join operations
 
