@@ -95,17 +95,26 @@
 
         <profile>
             <!-- internal distribution for ssb -->
-            <id>ssb</id>
+            <id>ssb-bip</id>
+            <repositories>
+                <repository>
+                    <id>ssb-bip-releases</id>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-public/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
             <distributionManagement>
                 <repository>
-                    <id>releases</id>
+                    <id>ssb-bip-releases</id>
                     <name>SSB Nexus Releases</name>
-                    <url>https://nexus.ssb.no/repository/maven-releases/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-releases/</url>
                 </repository>
                 <snapshotRepository>
-                    <id>snapshots</id>
+                    <id>ssb-bip-snapshots</id>
                     <name>SSB Snapshot Repository</name>
-                    <url>https://nexus.ssb.no/repository/maven-snapshots/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
         </profile>
